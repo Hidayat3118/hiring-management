@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { IoKeyOutline } from "react-icons/io5";
 import Link from "next/link";
+import PasswordInput from "@/components/inputPassword";
 
 export default function Home() {
   return (
@@ -30,6 +31,7 @@ export default function Home() {
 
           {/* Form */}
           <form className="space-y-4">
+            {/* email */}
             <div>
               <label
                 htmlFor="email"
@@ -44,6 +46,12 @@ export default function Home() {
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-teal-400 focus:outline-none"
               />
             </div>
+            {/* password */}
+            <PasswordInput/>
+
+            <Link href="/forgotPassword">
+              <p className="text-teal-400 text-sm mb-4 text-right">Lupa kata sandi?</p>
+            </Link>
 
             {/* Button daftar dengan email */}
             <button
@@ -60,14 +68,14 @@ export default function Home() {
               <div className="w-1/4 border-t border-gray-300"></div>
             </div>
             {/* button kkey */}
-            <Link href="login/password">
+            <Link href="/">
               <button
                 type="button"
                 className="w-full gap-3 mb-4 flex cursor-pointer items-center justify-center border border-gray-200 rounded-lg py-3 hover:bg-gray-50 transition"
               >
                 <IoKeyOutline className="font-bold" />
                 <span className="text-gray-700 font-medium">
-                  Masuk Dengan Kata Sandi
+                  Kirim link login melalui email
                 </span>
               </button>
             </Link>
