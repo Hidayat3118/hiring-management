@@ -13,7 +13,7 @@ const Register = () => {
   const router = useRouter();
 
   const actionCodeSettings = {
-    url: "https://yourapp.vercel.app", // bisa diarahkan ke mana pun (nanti diklik dari email)
+    url: "http://localhost:3000/", // bisa diarahkan ke mana pun (nanti diklik dari email)
     handleCodeInApp: true,
   };
 
@@ -23,7 +23,7 @@ const Register = () => {
     try {
       await sendSignInLinkToEmail(auth, email, actionCodeSettings);
       window.localStorage.setItem("emailForSignIn", email);
-      router.push(`/register/check-email?email=${encodeURIComponent(email)}`);
+      router.push(`/check-email?email=${encodeURIComponent(email)}`);
     } catch (err) {
       console.error(err);
     } finally {
