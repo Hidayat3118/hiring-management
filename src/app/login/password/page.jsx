@@ -1,9 +1,28 @@
+'use client';
 import Image from "next/image";
 import { IoKeyOutline } from "react-icons/io5";
 import Link from "next/link";
 import PasswordInput from "@/components/inputPassword";
+import { signInWithPopup } from "firebase/auth";
+import { auth, provider } from "@/lib/firebase";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export default function Home() {
+  const [loading, setLoading] = useState(false);
+  const handleGoogleLogin = async () => {
+    try {
+      setLoading(true);
+      await signInWithPopup(auth, provider);
+      toast.success("Pendaftaran dengan Google berhasil!");
+      // router.push("/");
+    } catch (error) {
+      console.error("gagal with google", error.message);
+      toast.error("Gagal masuk dengan Google, coba lagi nanti.");
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="bg-white  rounded-lg shadow-md w-full max-w-lg">
@@ -24,7 +43,10 @@ export default function Home() {
           </h2>
           <p className="text-left text-gray-600 text-sm mb-6">
             Belum punya akun?{" "}
-            <Link href="/register" className="text-teal-400 hover:underline font-medium">
+            <Link
+              href="/register"
+              className="text-teal-400 hover:underline font-medium"
+            >
               Daftar Menggunakan Email
             </Link>
           </p>
@@ -47,10 +69,12 @@ export default function Home() {
               />
             </div>
             {/* password */}
-            <PasswordInput/>
+            <PasswordInput />
 
             <Link href="/forgotPassword">
-              <p className="text-teal-400 text-sm mb-4 text-right">Lupa kata sandi?</p>
+              <p className="text-teal-400 text-sm mb-4 text-right">
+                Lupa kata sandi?
+              </p>
             </Link>
 
             {/* Button daftar dengan email */}
@@ -81,14 +105,14 @@ export default function Home() {
             </Link>
 
             {/* Google button */}
-            <button
+            <button onClick={handleGoogleLogin}
               type="button"
               className="w-full flex cursor-pointer items-center justify-center border border-gray-200 rounded-lg py-3 hover:bg-gray-50 transition"
             >
               <img
                 src="https://www.svgrepo.com/show/355037/google.svg"
                 alt="Google logo"
-                className="w-5 h-5 mr-2"
+                className="w-4 h-4 mr-2"
               />
               <span className="text-gray-700 font-medium">
                 Daftar dengan Google

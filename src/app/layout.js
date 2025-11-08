@@ -1,5 +1,6 @@
 import "./globals.css";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,6 +27,7 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${inter.className} antialiased`}
       >
+         <Toaster position="top-right" richColors />
         {children}
       </body>
     </html>

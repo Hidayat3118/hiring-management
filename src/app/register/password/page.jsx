@@ -2,13 +2,32 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { MdOutlineEmail } from "react-icons/md";
-import Link from 'next/link'
+import Link from "next/link";
 import PasswordInput from "@/components/inputPassword";
+import { useState } from "react";
+import { toast } from "sonner";
+// firebase
+import {
+  GoogleAuthProvider,
+  sendSignInLinkToEmail,
+  signInWithPopup,
+} from "firebase/auth";
+import { auth, provider } from "@/lib/firebase";
 const RegisterForm = () => {
   const route = useRouter();
-  const handleState = (e) => {
-    e.preventDefault();
-    route.push("/register");
+  const [loading, setLoading] = useState(false);
+  const handleGoogleRegister = async () => {
+    try {
+      // setLoading(true);
+      await signInWithPopup(auth, provider);
+      toast.success("Register Google sukses!");
+      // router.push("/");
+    } catch (error) {
+      console.error("gagal with google", error.message);
+      toast.error("gagal masuk coba lain waktu");
+    } finally {
+      setLoading(false);
+    }
   };
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -30,7 +49,10 @@ const RegisterForm = () => {
           </h2>
           <p className="text-left text-gray-600 text-sm mb-6">
             Sudah punya akun?{" "}
-            <Link href="/" className="text-teal-400 hover:underline font-medium">
+            <Link
+              href="/"
+              className="text-teal-400 hover:underline font-medium"
+            >
               Masuk
             </Link>
           </p>
@@ -53,7 +75,7 @@ const RegisterForm = () => {
               />
             </div>
             {/* katasandi */}
-            <PasswordInput/>
+            <PasswordInput />
 
             {/* Button daftar dengan email */}
             <button
@@ -76,22 +98,22 @@ const RegisterForm = () => {
                 type="button"
                 className="w-full gap-3 mb-4 flex cursor-pointer items-center justify-center border border-gray-200 rounded-lg py-3 hover:bg-gray-50 transition"
               >
-                <MdOutlineEmail  className="font-bold" />
+                <MdOutlineEmail className="font-bold" />
                 <span className="text-gray-700 font-medium">
-                  Masuk Dengan Kata Sandi
+                  Kirim link melalui email
                 </span>
               </button>
             </Link>
             {/* Google button */}
             <button
-              onClick={() => handleState}
+              onClick={handleGoogleRegister}
               type="button"
               className="w-full flex items-center justify-center border border-gray-200 rounded-lg py-3 hover:bg-gray-50 transition"
             >
               <img
                 src="https://www.svgrepo.com/show/355037/google.svg"
                 alt="Google logo"
-                className="w-5 h-5 mr-2"
+                className="w-4 h-4 mr-2"
               />
               <span className="text-gray-700 font-medium">
                 Daftar dengan Google
