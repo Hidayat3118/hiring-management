@@ -97,11 +97,6 @@ export default function JobFormAdmin({open, onOpenChange}) {
   return (
     <main className="flex items-center justify-center min-h-screen bg-gray-50">
       <Dialog open={open} onOpenChange={onOpenChange}>
-        {/* <DialogTrigger asChild>
-          <Button className="bg-cyan-600 hover:bg-cyan-700 text-white shadow-sm">
-            Create a new job
-          </Button>
-        </DialogTrigger> */}
 
         <DialogContent
           className="sm:max-w-[750px] w-full max-h-[90vh] overflow-y-auto rounded-2xl p-8 bg-white shadow-lg"

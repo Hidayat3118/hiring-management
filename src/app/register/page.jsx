@@ -18,7 +18,7 @@ const Register = () => {
   const [error, setError] = useState({ email: "" });
 
   const actionCodeSettings = {
-    url: "http://localhost:3000/", // setelah klik link email
+    url: "http://localhost:3000/verify", // setelah klik link email
     handleCodeInApp: true,
   };
   // handle register

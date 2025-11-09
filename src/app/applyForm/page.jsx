@@ -3,6 +3,7 @@ import { useState } from "react";
 import { FaCamera } from "react-icons/fa";
 import { TbInfoSquareFilled } from "react-icons/tb";
 import { LuUpload } from "react-icons/lu";
+import { FaArrowLeft } from "react-icons/fa6";
 
 export default function ApplyForm() {
   const [form, setForm] = useState({
@@ -33,13 +34,16 @@ export default function ApplyForm() {
     <main className="min-h-screen bg-gray-50 flex justify-center items-start py-10 px-4">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-2xl p-8"
+        className="w-full max-w-3xl p-8"
       >
         {/* dialog */}
-        <div className="h-[700px] mb-4 overflow-y-scroll bg-white rounded-md shadow-md w-full max-w-2xl p-8" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+        <div className="h-[700px] mb-4 overflow-y-scroll bg-white rounded-md shadow-md w-full  p-8" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
           {/* Header */}
           <div className="flex justify-between items-start mb-6">
-            <div>
+            <div className="flex gap-3 items-center">
+              <div className="rounded-md border border-gray-300 p-1 bg-white hover:bg-gray-100">
+                <FaArrowLeft className="text-xl cursor-pointer"/>
+              </div>
               <h1 className="text-xl font-semibold text-gray-800">
                 Apply Front End at Rakamin
               </h1>
@@ -49,6 +53,7 @@ export default function ApplyForm() {
               This field required to fill
             </div>
           </div>
+              <p className="text-red-500 font-semibold text-sm">*Required</p>
 
           {/* Photo upload */}
           <div className="grid gap-3 mb-6 max-w-36 ">

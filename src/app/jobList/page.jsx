@@ -3,8 +3,35 @@ import Image from "next/image";
 import { IoLocationOutline } from "react-icons/io5";
 import { HiOutlineBanknotes } from "react-icons/hi2";
 import Navbar from "@/components/navbar";
+import { auth } from "@/lib/firebase";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useState, useEffect } from "react";
 
 export default function Page() {
+  const [user, setUser] = useState(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        router.push("/register");
+      } else {
+        setUser(user);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [router]);
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-500 animate-pulse">Memuat...</p>
+      </div>
+    );
+  }
   return (
     <main>
       <Navbar />
@@ -65,9 +92,11 @@ export default function Page() {
                 </div>
               </div>
 
-              <button className="bg-yellow-400 text-gray-900 px-6 py-2 text-sm cursor-pointer rounded-lg font-medium hover:bg-yellow-500 transition">
-                Apply
-              </button>
+              <Link href="/applyForm">
+                <button className="bg-yellow-400 text-gray-900 px-6 py-2 text-sm cursor-pointer rounded-lg font-medium hover:bg-yellow-500 transition">
+                  Apply
+                </button>
+              </Link>
             </div>
 
             <hr className="my-6 border-gray-200" />
