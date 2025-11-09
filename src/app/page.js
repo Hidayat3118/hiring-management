@@ -18,7 +18,7 @@ export default function Home() {
   const router = useRouter();
 
   const actionCodeSettings = {
-    url: "http://localhost:3000/",
+    url: "http://localhost:3000/jobList",
     handleCodeInApp: true,
   };
 
@@ -46,13 +46,14 @@ export default function Home() {
       const methods = await fetchSignInMethodsForEmail(auth, email);
 
       // ❌ Jika email belum terdaftar
-      if (methods.length === 0) {
-        setError({ email: "Email belum terdaftar di akun Rakamin Academy." });
-        setLoading(false);
-        return;
-      }
+      // if (methods.length === 0) {
+      //   setError({ email: "Email belum terdaftar di akun Rakamin Academy." });
+      //   setLoading(false);
+      //   console.log('gagal ', error)
+      //   return;
+      // }
 
-      // ✅ Kirim link login
+      // Kirim link login
       await sendSignInLinkToEmail(auth, email, actionCodeSettings);
       window.localStorage.setItem("emailForSignIn", email);
       router.push(`/check-email?email=${encodeURIComponent(email)}`);
@@ -82,7 +83,7 @@ export default function Home() {
     try {
       setLoading(true);
       await signInWithPopup(auth, provider);
-      router.push("/dashboard");
+      router.push("/jobList");
     } catch (error) {
       console.error("Gagal login dengan Google:", error.message);
       setError({

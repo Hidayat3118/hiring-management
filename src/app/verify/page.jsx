@@ -20,7 +20,7 @@ export default function VerifyPage() {
         try {
           await signInWithEmailLink(auth, email, window.location.href);
           window.localStorage.removeItem("emailForSignIn");
-          toast.success("Login berhasil! Akun kamu telah dibuat 🎉");
+          toast.success("Login berhasil! Akun kamu telah dibuat");
           router.push("/jobList");
         } catch (error) {
           console.error(error);
