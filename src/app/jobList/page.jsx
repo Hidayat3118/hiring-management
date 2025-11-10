@@ -35,7 +35,7 @@ export default function Page() {
   return (
     <main>
       <Navbar />
-      <div className="min-h-screen flex justify-center py-10 px-4">
+      <div className="min-h-screen flex justify-center py-10 px-4 mt-8 md:mt-16">
         <div className="flex bg-white rounded-2xl shadow-md overflow-hidden w-full max-w-7xl">
           {/* Left panel - Job list */}
           <div className="w-1/3 border-r overflow-y-auto p-4">

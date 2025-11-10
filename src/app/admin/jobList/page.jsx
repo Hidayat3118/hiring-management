@@ -6,7 +6,7 @@ import { useState } from "react";
 export default function JobList() {
   const [open, setOpen] = useState();
   return (
-    <main className="min-h-screen flex flex-col items-center px-6 py-8 max-w-7xl mx-auto">
+    <main className="flex flex-col items-center px-6 py-8 max-w-7xl mx-auto">
       {/* Header */}
       <header className="w-full max-w-7xl flex justify-between items-center mb-6">
         <h1 className="text-lg font-semibold text-gray-800">Job List</h1>

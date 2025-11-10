@@ -56,7 +56,6 @@ const RegisterForm = () => {
               Masuk
             </Link>
           </p>
-
           {/* Form */}
           <form className="space-y-4">
             {/* email */}

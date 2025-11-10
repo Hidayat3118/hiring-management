@@ -45,13 +45,22 @@ export default function Home() {
     try {
       const methods = await fetchSignInMethodsForEmail(auth, email);
 
-      // ❌ Jika email belum terdaftar
-      // if (methods.length === 0) {
-      //   setError({ email: "Email belum terdaftar di akun Rakamin Academy." });
-      //   setLoading(false);
-      //   console.log('gagal ', error)
-      //   return;
-      // }
+      // 👉 Kalau akun belum terdaftar di Firebase sama sekali
+      if (methods.length === 0) {
+        setError({ email: "Email belum terdaftar di akun Rakamin Academy." });
+        setLoading(false);
+        return;
+      }
+
+      // 👉 Kalau akun terdaftar tapi tidak pakai email-link (misal Google atau Password)
+      const isEmailLinkEnabled = methods.includes("emailLink");
+      if (!isEmailLinkEnabled) {
+        setError({
+          email: "Akun ini tidak menggunakan metode login dengan link email.",
+        });
+        setLoading(false);
+        return;
+      }
 
       // Kirim link login
       await sendSignInLinkToEmail(auth, email, actionCodeSettings);
@@ -66,7 +75,8 @@ export default function Home() {
         });
       } else if (err.code === "auth/network-request-failed") {
         setError({
-          email: "Tidak dapat terhubung ke server. Periksa koneksi internet kamu.",
+          email:
+            "Tidak dapat terhubung ke server. Periksa koneksi internet kamu.",
         });
       } else {
         setError({
@@ -124,8 +134,7 @@ export default function Home() {
           </p>
 
           {/* ❌ Pesan error besar di atas input */}
-          {error.email ===
-            "Email belum terdaftar di akun Rakamin Academy." && (
+          {error.email === "Email belum terdaftar di akun Rakamin Academy." && (
             <div className="text-red-500 border border-red-300 rounded-md mb-3 text-xs py-1 text-center px-2">
               {error.email}{" "}
               <Link href="/register">

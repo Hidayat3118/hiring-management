@@ -84,7 +84,7 @@ const Register = () => {
       setLoading(true);
       await signInWithPopup(auth, provider);
       toast.success("Pendaftaran dengan Google berhasil!");
-      // router.push("/");
+      router.push("/jobList");
     } catch (error) {
       console.error("gagal with google", error.message);
       toast.error("Gagal masuk dengan Google, coba lagi nanti.");
