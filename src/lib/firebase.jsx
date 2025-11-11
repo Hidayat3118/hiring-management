@@ -1,6 +1,8 @@
 import { initializeApp } from "firebase/app";
 // import { getAnalytics } from "firebase/analytics";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { getFirestore } from "firebase/firestore"; // 👈 TAMBAH INI
+
 const firebaseConfig = {
   apiKey: "AIzaSyCrChyokeEoUOgSP9ElEbZRo_giSmdJ0ZY",
   authDomain: "hiring-management-50c51.firebaseapp.com",
@@ -15,6 +17,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 // const analytics = getAnalytics(app);
 export const auth = getAuth(app);
+export const db = getFirestore(app); // 👈 TAMBAH INI
 const provider = new GoogleAuthProvider();
 
-export { auth, provider };
+export { auth, db, provider }; // 👈 TAMBAH db DI SINI

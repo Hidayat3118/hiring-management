@@ -8,6 +8,7 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function Page() {
   const [user, setUser] = useState(null);
@@ -28,7 +29,7 @@ export default function Page() {
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500 animate-pulse">Memuat...</p>
+          <Spinner className="size-16"/>
       </div>
     );
   }

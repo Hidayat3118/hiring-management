@@ -86,9 +86,9 @@ const RegisterForm = () => {
 
             {/* Divider */}
             <div className="flex items-center justify-center my-4">
-              <div className="w-1/4 border-t border-gray-300"></div>
-              <span className="text-gray-500 text-sm mx-2">or</span>
-              <div className="w-1/4 border-t border-gray-300"></div>
+              <div className="w-3/4 border-t border-gray-300"></div>
+              <span className="text-gray-500 text-sm mx-2">atau</span>
+              <div className="w-3/4 border-t border-gray-300"></div>
             </div>
 
             {/* register email */}

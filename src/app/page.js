@@ -7,7 +7,8 @@ import {
   signInWithPopup,
   fetchSignInMethodsForEmail,
 } from "firebase/auth";
-import { auth, provider } from "@/lib/firebase";
+import { auth, provider, db } from "@/lib/firebase"; // 👈 TAMBAH db
+import { getDoc, doc } from "firebase/firestore"; // 👈 TAMBAH INI
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -18,7 +19,7 @@ export default function Home() {
   const router = useRouter();
 
   const actionCodeSettings = {
-    url: "http://localhost:3000/jobList",
+    url: "http://localhost:3000/jobList", // 👈 UBAH KE /verify
     handleCodeInApp: true,
   };
 
@@ -43,29 +44,49 @@ export default function Home() {
     }
 
     try {
-      const methods = await fetchSignInMethodsForEmail(auth, email);
+      // 🔍 PERUBAHAN: Cek di Firestore dulu
+      const registeredDoc = await getDoc(doc(db, "registeredEmails", email));
 
-      // 👉 Kalau akun belum terdaftar di Firebase sama sekali
-      if (methods.length === 0) {
+      // Jika email tidak ada di Firestore = belum terdaftar
+      if (!registeredDoc.exists()) {
         setError({ email: "Email belum terdaftar di akun Rakamin Academy." });
         setLoading(false);
         return;
       }
 
-      // 👉 Kalau akun terdaftar tapi tidak pakai email-link (misal Google atau Password)
-      const isEmailLinkEnabled = methods.includes("emailLink");
-      if (!isEmailLinkEnabled) {
+      // Email ada di Firestore, sekarang cek di Firebase Auth
+      const methods = await fetchSignInMethodsForEmail(auth, email);
+
+      // Jika methods kosong (normal untuk emailLink yang sudah diverifikasi)
+      // atau ada emailLink, kirim link login
+      if (methods.length === 0 || methods.includes("emailLink")) {
+        await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+        window.localStorage.setItem("emailForSignIn", email);
+        router.push(`/check-email?email=${encodeURIComponent(email)}`);
+        return;
+      }
+
+      // Jika akun pakai password
+      if (methods.includes("password")) {
         setError({
-          email: "Akun ini tidak menggunakan metode login dengan link email.",
+          email: "Akun ini pakai password. Gunakan 'Masuk Dengan Kata Sandi'.",
         });
         setLoading(false);
         return;
       }
 
-      // Kirim link login
-      await sendSignInLinkToEmail(auth, email, actionCodeSettings);
-      window.localStorage.setItem("emailForSignIn", email);
-      router.push(`/check-email?email=${encodeURIComponent(email)}`);
+      // Jika akun pakai Google
+      if (methods.includes("google.com")) {
+        setError({
+          email: "Akun ini terdaftar via Google. Gunakan 'Masuk dengan Google'.",
+        });
+        setLoading(false);
+        return;
+      }
+
+      setError({
+        email: "Metode login tidak didukung.",
+      });
     } catch (err) {
       console.error("Firebase error:", err.code, err.message);
 
@@ -184,11 +205,12 @@ export default function Home() {
             </button>
 
             {/* Divider */}
-            <div className="flex items-center justify-center my-4">
-              <div className="w-1/4 border-t border-gray-300"></div>
+           <div className="flex items-center justify-center my-4">
+              <div className="w-3/4 border-t border-gray-300"></div>
               <span className="text-gray-500 text-sm mx-2">atau</span>
-              <div className="w-1/4 border-t border-gray-300"></div>
+              <div className="w-3/4 border-t border-gray-300"></div>
             </div>
+
 
             {/* Tombol Masuk dengan Password */}
             <Link href="/login/password">
