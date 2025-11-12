@@ -61,31 +61,31 @@ export default function JobList() {
       </div>
 
       {/* Empty State */}
-      <section className="flex flex-col items-center justify-center text-center mt-10">
-        <Image
-          src="/serch.svg"
-          alt="Create job"
-          width={224}
-          height={224}
-          quality={100}
-          sizes="(max-width: 768px) 50vw, 224px"
-          className="w-72  object-contain mb-8"
-        />
+        {/* <section className="flex flex-col items-center justify-center text-center mt-10">
+          <Image
+            src="/serch.svg"
+            alt="Create job"
+            width={224}
+            height={224}
+            quality={100}
+            sizes="(max-width: 768px) 50vw, 224px"
+            className="w-72  object-contain mb-8"
+          />
 
-        <h2 className="text-gray-800 font-medium text-lg">
-          No job openings available
-        </h2>
-        <p className="text-gray-500 text-sm max-w-md mt-1">
-          Create a job opening now and start the candidate process.
-        </p>
+          <h2 className="text-gray-800 font-medium text-lg">
+            No job openings available
+          </h2>
+          <p className="text-gray-500 text-sm max-w-md mt-1">
+            Create a job opening now and start the candidate process.
+          </p>
 
-        <button
-          onClick={() => setOpen(true)}
-          className="mt-5 bg-amber-400 cursor-pointer hover:bg-amber-500 text-gray-800 font-medium py-2 px-5 rounded-md shadow-sm flex items-center gap-2 transition"
-        >
-          Create a new job
-        </button>
-      </section>
+          <button
+            onClick={() => setOpen(true)}
+            className="mt-5 bg-amber-400 cursor-pointer hover:bg-amber-500 text-gray-800 font-medium py-2 px-5 rounded-md shadow-sm flex items-center gap-2 transition"
+          >
+            Create a new job
+          </button>
+        </section> */}
        <JobFormAdmin open={open} onOpenChange={setOpen} />
     </main>
   );

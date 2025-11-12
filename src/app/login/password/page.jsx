@@ -7,11 +7,9 @@ import PasswordInput from "@/components/inputPassword";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import {
-  signInWithEmailAndPassword,
-  signInWithPopup,
-} from "firebase/auth";
-import { auth, provider } from "@/lib/firebase";
+import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { auth, provider, db } from "@/lib/firebase"; // 👈 TAMBAH db
+import { doc, getDoc } from "firebase/firestore"; // 👈 TAMBAH INI
 
 export default function Home() {
   const router = useRouter();
@@ -28,9 +26,28 @@ export default function Home() {
   const handleGoogleLogin = async () => {
     try {
       setLoading(true);
-      await signInWithPopup(auth, provider);
-      toast.success("Login dengan Google berhasil!");
-      router.push("/dashboard"); // arahkan ke dashboard misalnya
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      // 🔍 Ambil role dari Firestore
+      const userDoc = await getDoc(doc(db, "registeredEmails", user.email));
+
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        console.log("✅ Google login berhasil, role:", userData.role);
+
+        toast.success("Login dengan Google berhasil!");
+
+        // 🔁 Redirect sesuai role
+        if (userData.role === "admin") {
+          router.push("/admin/jobList");
+        } else {
+          router.push("/jobList");
+        }
+      } else {
+        toast.success("Login berhasil!");
+        router.push("/jobList");
+      }
     } catch (error) {
       console.error("Gagal login dengan Google:", error.message);
       toast.error("Gagal masuk dengan Google, coba lagi nanti.");
@@ -55,9 +72,33 @@ export default function Home() {
     }
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      toast.success("Berhasil login!");
-      router.push("/dashboard"); // redirect setelah login
+      // 🔸 Login dengan email + password
+      const result = await signInWithEmailAndPassword(auth, email, password);
+      const user = result.user;
+
+      // 🔍 PERBAIKAN: Ambil userData dari Firestore
+      const userDoc = await getDoc(doc(db, "registeredEmails", user.email));
+
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        console.log("✅ Email login berhasil, role:", userData.role);
+
+        toast.success("Berhasil login!");
+
+        // 🔁 Redirect sesuai role
+        if (userData.role === "admin") {
+          console.log("🔐 Redirect ke /admin/jobList");
+          router.push("/admin/jobList"); // 👈 Admin ke admin/jobList
+        } else {
+          console.log("👤 Redirect ke /jobList");
+          router.push("/jobList"); // 👈 Candidate ke jobList biasa
+        }
+      } else {
+        // Data tidak ada di Firestore, redirect ke jobList
+        console.log("⚠️ User data not found, redirect ke /jobList");
+        toast.success("Berhasil login!");
+        router.push("/jobList");
+      }
     } catch (error) {
       console.error("Error saat login:", error.code, error.message);
 
@@ -102,7 +143,7 @@ export default function Home() {
           <p className="text-left text-gray-600 text-sm mb-6">
             Belum punya akun?{" "}
             <Link
-              href="/register"
+              href="/register/password"
               className="text-teal-400 hover:underline font-medium"
             >
               Daftar Menggunakan Email
@@ -164,7 +205,7 @@ export default function Home() {
             </div>
 
             {/* Button login via email link */}
-            <Link href="/email-login">
+            <Link href="/">
               <button
                 type="button"
                 className="w-full gap-3 mb-4 flex cursor-pointer items-center justify-center border border-gray-200 rounded-lg py-3 hover:bg-gray-50 transition"
