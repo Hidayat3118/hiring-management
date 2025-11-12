@@ -2,9 +2,54 @@
 import { FiSearch } from "react-icons/fi";
 import Image from "next/image";
 import JobFormAdmin from "@/components/jobFormAdmin";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+// firebase imports
+import { db } from "@/lib/firebase";
+import { collection, getDocs } from "firebase/firestore";
+import JobCard from "@/components/jobCard";
+
 export default function JobList() {
   const [open, setOpen] = useState();
+  const [lowonganKerja, setLowonganKerja] = useState([]);
+
+  useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "lowonganKerja"));
+        const data = querySnapshot.docs.map((doc) => {
+          const docData = doc.data();
+          
+          // 🔄 Convert Firestore Timestamp ke Date
+          let tanggalBuat = null;
+          if (docData.tanggalBuat?.seconds) {
+            tanggalBuat = new Date(docData.tanggalBuat.seconds * 1000); // Convert ke milliseconds
+          }
+
+          return {
+            id: doc.id,
+            ...docData,
+            tanggalBuat: tanggalBuat, // Replace dengan Date object
+          };
+        });
+        setLowonganKerja(data);
+      } catch (error) {
+        console.error("Gagal ambil data:", error);
+      }
+    };
+
+    fetchJobs();
+  }, []);
+
+  // 📅 Helper function untuk format tanggal
+  const formatDate = (date) => {
+    if (!date) return "-";
+    return date.toLocaleDateString("id-ID", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
   return (
     <main className="flex flex-col items-center px-6 py-8 max-w-7xl mx-auto">
       {/* Header */}
@@ -60,8 +105,22 @@ export default function JobList() {
         </div>
       </div>
 
-      {/* Empty State */}
-        {/* <section className="flex flex-col items-center justify-center text-center mt-10">
+      {/* Card job */}
+      {lowonganKerja && lowonganKerja.length > 0 ? (
+        lowonganKerja.map((job) => (
+          <div key={job.id} className="w-full mb-6 mt-10">
+            <JobCard
+              gajiMaksimum={job.gajiMaksimum}
+              gajiMinimum={job.gajiMinimum}
+              status={job.status}
+              waktuBuat={formatDate(job.tanggalBuat)} // 👈 Gunakan formatDate
+              namaJob={job.namaLoker}
+            />
+          </div>
+        ))
+      ) : (
+        // Empty State
+        <section className="flex flex-col items-center justify-center text-center mt-10">
           <Image
             src="/serch.svg"
             alt="Create job"
@@ -69,7 +128,7 @@ export default function JobList() {
             height={224}
             quality={100}
             sizes="(max-width: 768px) 50vw, 224px"
-            className="w-72  object-contain mb-8"
+            className="w-72 object-contain mb-8"
           />
 
           <h2 className="text-gray-800 font-medium text-lg">
@@ -85,8 +144,10 @@ export default function JobList() {
           >
             Create a new job
           </button>
-        </section> */}
-       <JobFormAdmin open={open} onOpenChange={setOpen} />
+        </section>
+      )}
+
+      <JobFormAdmin open={open} onOpenChange={setOpen} />
     </main>
   );
 }
