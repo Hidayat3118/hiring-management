@@ -1,230 +1,440 @@
 "use client";
 import { useState } from "react";
-import { FaCamera } from "react-icons/fa";
 import { TbInfoSquareFilled } from "react-icons/tb";
-import { LuUpload } from "react-icons/lu";
 import { FaArrowLeft } from "react-icons/fa6";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { db } from "@/lib/firebase";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { IoSearch } from "react-icons/io5"; // 👈 TAMBAH icon search
+
+// Data negara dengan bendera emoji (5 contoh)
+const COUNTRIES = [
+  { code: "ID", dial: "+62", name: "Indonesia", flag: "🇮🇩" },
+  { code: "MY", dial: "+60", name: "Malaysia", flag: "🇲🇾" },
+  { code: "SG", dial: "+65", name: "Singapore", flag: "🇸🇬" },
+  { code: "TH", dial: "+66", name: "Thailand", flag: "🇹🇭" },
+  { code: "PH", dial: "+63", name: "Philippines", flag: "🇵🇭" },
+];
+
+// 🏙️ Data provinsi Indonesia (5 contoh)
+const INDONESIAN_PROVINCES = [
+  "DKI Jakarta",
+  "Jawa Barat",
+  "Jawa Timur",
+  "Bali",
+  "Sumatera Utara",
+];
 
 export default function ApplyForm() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [countryCode, setCountryCode] = useState("+62");
+  const [searchCountry, setSearchCountry] = useState("");
+  const [showCountryDropdown, setShowCountryDropdown] = useState(false);
+
   const [form, setForm] = useState({
     fullName: "",
     dob: "",
     pronoun: "",
     domicile: "",
     phone: "",
-    photo: null,
+    email: "",
+    linkedin: "",
+  });
+
+  const [errors, setErrors] = useState({
+    fullName: "",
+    dob: "",
+    pronoun: "",
+    domicile: "",
+    phone: "",
+    email: "",
+    linkedin: "",
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
+    setErrors({ ...errors, [name]: "" });
   };
 
-  const handlePhoto = (e) => {
-    const file = e.target.files[0];
-    if (file) setForm({ ...form, photo: URL.createObjectURL(file) });
+  // 🔍 Filter negara berdasarkan search
+  const filteredCountries = COUNTRIES.filter(
+    (country) =>
+      country.name.toLowerCase().includes(searchCountry.toLowerCase()) ||
+      country.dial.includes(searchCountry)
+  );
+
+  // 🔄 Pilih negara
+  const handleSelectCountry = (dial) => {
+    setCountryCode(dial);
+    setSearchCountry("");
+    setShowCountryDropdown(false);
   };
 
-  const handleSubmit = (e) => {
+  // Dapatkan bendera negara yang dipilih
+  const selectedCountryFlag = COUNTRIES.find(
+    (c) => c.dial === countryCode
+  )?.flag || "🏳️";
+
+  // ✅ Validasi form
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!form.fullName.trim()) {
+      newErrors.fullName = "Nama lengkap wajib diisi";
+    }
+
+    if (!form.dob) {
+      newErrors.dob = "Tanggal lahir wajib diisi";
+    }
+
+    if (!form.pronoun) {
+      newErrors.pronoun = "Pilih pronoun Anda";
+    }
+
+    if (!form.domicile) {
+      newErrors.domicile = "Domisili wajib diisi";
+    }
+
+    if (!form.phone.trim()) {
+      newErrors.phone = "Nomor telepon wajib diisi";
+    } else if (!/^\d{9,}$/.test(form.phone)) {
+      newErrors.phone = "Nomor telepon minimal 9 digit";
+    }
+
+    if (!form.email.trim()) {
+      newErrors.email = "Email wajib diisi";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      newErrors.email = "Format email tidak valid";
+    }
+
+    if (!form.linkedin.trim()) {
+      newErrors.linkedin = "URL LinkedIn wajib diisi";
+    } else if (!form.linkedin.includes("linkedin.com")) {
+      newErrors.linkedin = "URL LinkedIn tidak valid";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // 💾 Submit form
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert("Form submitted! (demo only)");
+
+    if (!validateForm()) {
+      toast.error("Pastikan semua data terisi dengan benar");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const applicationData = {
+        fullName: form.fullName.trim(),
+        dob: form.dob,
+        pronoun: form.pronoun,
+        domicile: form.domicile,
+        phone: form.phone.trim(),
+        phoneCountryCode: countryCode,
+        email: form.email.trim(),
+        linkedin: form.linkedin.trim(),
+        status: "pending",
+        appliedAt: serverTimestamp(),
+      };
+
+      const docRef = await addDoc(
+        collection(db, "applications"),
+        applicationData
+      );
+
+      console.log("✅ Aplikasi berhasil disimpan dengan ID:", docRef.id);
+      toast.success("Aplikasi berhasil dikirim!");
+
+      setForm({
+        fullName: "",
+        dob: "",
+        pronoun: "",
+        domicile: "",
+        phone: "",
+        email: "",
+        linkedin: "",
+      });
+      setCountryCode("+62");
+      setErrors({});
+
+      setTimeout(() => {
+        router.push("/jobList");
+      }, 2000);
+    } catch (error) {
+      console.error("❌ Error menyimpan aplikasi:", error);
+      toast.error("Gagal mengirim aplikasi. Coba lagi nanti.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <main className="min-h-screen bg-gray-50 flex justify-center items-start py-10 px-4">
-      <form
-        onSubmit={handleSubmit}
-        className="w-full max-w-3xl p-8"
-      >
-        {/* dialog */}
-        <div className="h-[700px] mb-4 overflow-y-scroll bg-white rounded-md shadow-md w-full  p-8" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+      <form onSubmit={handleSubmit} className="w-full max-w-3xl p-8">
+        {/* Dialog */}
+        <div className="mb-4 overflow-y-auto bg-white rounded-md shadow-md w-full p-8">
           {/* Header */}
           <div className="flex justify-between items-start mb-6">
             <div className="flex gap-3 items-center">
-              <div className="rounded-md border border-gray-300 p-1 bg-white hover:bg-gray-100">
-                <FaArrowLeft className="text-xl cursor-pointer"/>
-              </div>
+              <button
+                type="button"
+                onClick={() => router.back()}
+                className="rounded-md border border-gray-300 p-1 bg-white hover:bg-gray-100 cursor-pointer"
+              >
+                <FaArrowLeft className="text-xl" />
+              </button>
               <h1 className="text-xl font-semibold text-gray-800">
-                Apply Front End at Rakamin
+                Lamar Posisi Frontend di Rakamin
               </h1>
             </div>
             <div className="flex items-center gap-1 text-sm text-gray-500">
               <TbInfoSquareFilled className="text-2xl text-blue-950" />
-              This field required to fill
+              Field ini wajib diisi
             </div>
           </div>
-              <p className="text-red-500 font-semibold text-sm">*Required</p>
-
-          {/* Photo upload */}
-          <div className="grid gap-3 mb-6 max-w-36 ">
-            <div className="w-36 h-36 rounded-full bg-cyan-50 flex items-center justify-center overflow-hidden">
-              {form.photo ? (
-                <img
-                  src={form.photo}
-                  alt="Profile preview"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <img
-                  src="/avatar-placeholder.png"
-                  alt="avatar"
-                  className="w-20 h-20"
-                />
-              )}
-            </div>
-            <label className="flex items-center gap-2 border px-3 py-2 rounded-lg text-sm cursor-pointer hover:bg-gray-50 ">
-              <LuUpload />
-              Take a Picture
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handlePhoto}
-                className="hidden"
-              />
-            </label>
-          </div>
+          <p className="text-red-500 font-semibold text-sm mb-6">*Wajib diisi</p>
 
           {/* Full Name */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Full name<span className="text-red-500">*</span>
+              Nama lengkap<span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               name="fullName"
               value={form.fullName}
               onChange={handleChange}
-              placeholder="Enter your full name"
-              className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              placeholder="Masukkan nama lengkap Anda"
+              className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 ${
+                errors.fullName
+                  ? "border-red-500 focus:ring-red-500"
+                  : "border-gray-300 focus:ring-cyan-500"
+              }`}
             />
+            {errors.fullName && (
+              <p className="text-red-500 text-xs mt-1">{errors.fullName}</p>
+            )}
           </div>
 
           {/* Date of Birth */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Date of birth<span className="text-red-500">*</span>
+              Tanggal lahir<span className="text-red-500">*</span>
             </label>
             <input
               type="date"
               name="dob"
               value={form.dob}
               onChange={handleChange}
-              className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 ${
+                errors.dob
+                  ? "border-red-500 focus:ring-red-500"
+                  : "border-gray-300 focus:ring-cyan-500"
+              }`}
             />
+            {errors.dob && (
+              <p className="text-red-500 text-xs mt-1">{errors.dob}</p>
+            )}
           </div>
 
           {/* Pronoun */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Pronoun (gender)<span className="text-red-500">*</span>
+              Pronoun (Jenis kelamin)<span className="text-red-500">*</span>
             </label>
             <div className="flex gap-6 mt-2">
-              <label className="flex items-center gap-2">
+              <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
                   name="pronoun"
-                  value="female"
-                  checked={form.pronoun === "female"}
+                  value="perempuan"
+                  checked={form.pronoun === "perempuan"}
                   onChange={handleChange}
                 />
-                <span className="text-sm text-gray-700">She/her (Female)</span>
+                <span className="text-sm text-gray-700">Perempuan</span>
               </label>
-              <label className="flex items-center gap-2">
+              <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
                   name="pronoun"
-                  value="male"
-                  checked={form.pronoun === "male"}
+                  value="laki-laki"
+                  checked={form.pronoun === "laki-laki"}
                   onChange={handleChange}
                 />
-                <span className="text-sm text-gray-700">He/him (Male)</span>
+                <span className="text-sm text-gray-700">Laki-laki</span>
               </label>
             </div>
+            {errors.pronoun && (
+              <p className="text-red-500 text-xs mt-2">{errors.pronoun}</p>
+            )}
           </div>
 
           {/* Domicile */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Domicile<span className="text-red-500">*</span>
+              Domisili<span className="text-red-500">*</span>
             </label>
             <select
               name="domicile"
               value={form.domicile}
               onChange={handleChange}
-              className="w-full border rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              className={`w-full border rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 ${
+                errors.domicile
+                  ? "border-red-500 focus:ring-red-500"
+                  : "border-gray-300 focus:ring-cyan-500"
+              }`}
             >
-              <option value="">Choose your domicile</option>
-              <option value="Jakarta">Jakarta</option>
-              <option value="Bandung">Bandung</option>
-              <option value="Surabaya">Surabaya</option>
-              <option value="Yogyakarta">Yogyakarta</option>
+              <option value="">Pilih Provinsi</option>
+              {INDONESIAN_PROVINCES.map((province) => (
+                <option key={province} value={province}>
+                  {province}
+                </option>
+              ))}
             </select>
+            {errors.domicile && (
+              <p className="text-red-500 text-xs mt-1">{errors.domicile}</p>
+            )}
           </div>
 
           {/* Phone */}
-          <div className="mb-8">
+          <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Phone number<span className="text-red-500">*</span>
+              Nomor telepon<span className="text-red-500">*</span>
             </label>
-            <div className="flex items-center border rounded-lg overflow-hidden bg-white">
-              {/* Flag + dropdown */}
-              <div className="flex items-center px-3 border-r">
-                <img
-                  src="https://flagcdn.com/w20/id.png"
-                  alt="Indonesia flag"
-                  className="w-5 h-5 rounded-full mr-2"
-                />
-                <select
-                  className="bg-transparent focus:outline-none text-gray-600 text-sm cursor-pointer"
-                  defaultValue="+62"
+
+            {/* Phone input dengan negara */}
+            <div className="relative">
+              <div
+                className={`flex items-center border rounded-lg overflow-hidden bg-white ${
+                  errors.phone ? "border-red-500" : "border-gray-300"
+                }`}
+              >
+                {/* Country Button */}
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowCountryDropdown(!showCountryDropdown)
+                  }
+                  className="flex items-center gap-2 px-3 py-2 border-r border-gray-300 hover:bg-gray-50 text-gray-700 font-medium min-w-max"
                 >
-                  <option value="+62">+62</option>
-                  <option value="+60">+60</option>
-                  <option value="+65">+65</option>
-                  <option value="+1">+1</option>
-                </select>
+                  <span className="text-xl">{selectedCountryFlag}</span>
+                  <span>{countryCode}</span>
+                  <span className="text-gray-400">▼</span>
+                </button>
+
+                {/* Phone Input */}
+                <input
+                  type="tel"
+                  name="phone"
+                  value={form.phone}
+                  onChange={handleChange}
+                  placeholder="81XXXXXXXXX"
+                  className="flex-1 px-3 py-2 focus:outline-none text-gray-700"
+                />
               </div>
 
-              {/* Input nomor */}
-              <input
-                type="tel"
-                name="phone"
-                value={form.phone}
-                onChange={handleChange}
-                placeholder="81XXXXXXXXX"
-                className="flex-1 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500 text-gray-700"
-              />
+              {/* Dropdown List dengan Search */}
+              {showCountryDropdown && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-50 w-full">
+                  {/* Search Input */}
+                  <div className="p-3 border-b border-gray-300 flex items-center gap-2 bg-gray-50">
+                    <IoSearch className="text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="Search"
+                      value={searchCountry}
+                      onChange={(e) => setSearchCountry(e.target.value)}
+                      className="flex-1 outline-none bg-gray-50 text-sm"
+                      autoFocus
+                    />
+                  </div>
+
+                  {/* Country List */}
+                  <div className="max-h-48 overflow-y-auto">
+                    {filteredCountries.length > 0 ? (
+                      filteredCountries.map((country) => (
+                        <button
+                          key={country.dial}
+                          type="button"
+                          onClick={() => handleSelectCountry(country.dial)}
+                          className="w-full text-left px-4 py-3 hover:bg-gray-100 flex items-center gap-3 border-b border-gray-100 last:border-b-0"
+                        >
+                          <span className="text-2xl">{country.flag}</span>
+                          <div className="flex-1">
+                            <p className="font-medium text-gray-800">
+                              {country.name}
+                            </p>
+                          </div>
+                          <span className="text-gray-600 font-medium">
+                            {country.dial}
+                          </span>
+                        </button>
+                      ))
+                    ) : (
+                      <div className="px-4 py-6 text-center text-gray-500 text-sm">
+                        Negara tidak ditemukan
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
+
+            {errors.phone && (
+              <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
+            )}
           </div>
 
-          {/* email */}
+          {/* Email */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Email<span className="text-red-500">*</span>
             </label>
             <input
-              type="text"
+              type="email"
               name="email"
-              value={form.fullName}
+              value={form.email}
               onChange={handleChange}
-              placeholder="Enter your email address"
-              className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              placeholder="contoh@email.com"
+              className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 ${
+                errors.email
+                  ? "border-red-500 focus:ring-red-500"
+                  : "border-gray-300 focus:ring-cyan-500"
+              }`}
             />
+            {errors.email && (
+              <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+            )}
           </div>
 
-          {/* linkedin */}
-          <div className="mb-4">
+          {/* LinkedIn */}
+          <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Linkedin<span className="text-red-500">*</span>
+              LinkedIn<span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               name="linkedin"
-              value={form.fullName}
+              value={form.linkedin}
               onChange={handleChange}
-              placeholder="https/linkedin.com/username"
-              className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              placeholder="https://linkedin.com/in/username"
+              className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 ${
+                errors.linkedin
+                  ? "border-red-500 focus:ring-red-500"
+                  : "border-gray-300 focus:ring-cyan-500"
+              }`}
             />
+            {errors.linkedin && (
+              <p className="text-red-500 text-xs mt-1">{errors.linkedin}</p>
+            )}
           </div>
         </div>
 
@@ -232,9 +442,14 @@ export default function ApplyForm() {
         <div className="pt-2">
           <button
             type="submit"
-            className="w-full bg-cyan-700 hover:bg-cyan-800 text-white py-3 rounded-lg font-medium transition"
+            disabled={loading}
+            className={`w-full ${
+              loading
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-cyan-700 hover:bg-cyan-800"
+            } text-white py-3 rounded-lg font-medium transition`}
           >
-            Submit
+            {loading ? "Mengirim..." : "Kirim Aplikasi"}
           </button>
         </div>
       </form>

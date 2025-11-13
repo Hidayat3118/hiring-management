@@ -1,8 +1,20 @@
 "use client";
+import { useRouter } from "next/navigation";
+export default function JobCard({
+  id,
+  gajiMinimum,
+  gajiMaksimum,
+  status,
+  waktuBuat,
+  namaJob,
+}) {
+  const handleManage = () => {
+    router.push(`/admin/manageJob/${id}`);
+  };
 
-export default function JobCard({ gajiMinimum, gajiMaksimum, status, waktuBuat, namaJob }) {
+  const router = useRouter();
   return (
-    <div className="max-w-4xl rounded-xl px-8 py-6 flex items-center justify-between shadow-md bg-neutral-100">
+    <div className="max-w-3xl rounded-xl px-8 py-6 flex items-center justify-between shadow-md bg-neutral-100">
       {/* Kiri */}
       <div className="flex items-start gap-3">
         {/* Status badge */}
@@ -17,13 +29,15 @@ export default function JobCard({ gajiMinimum, gajiMaksimum, status, waktuBuat, 
           {/* Job Info */}
           <div className="mt-2">
             <h2 className="text-lg font-semibold">{namaJob}</h2>
-            <p className="text-gray-600 text-sm mt-1">Rp.{gajiMinimum} - Rp.{gajiMaksimum}</p>
+            <p className="text-gray-600 text-sm mt-1">
+              Rp.{gajiMinimum} - Rp.{gajiMaksimum}
+            </p>
           </div>
         </div>
       </div>
 
       {/* Kanan */}
-      <button className="bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-medium px-6 py-1 rounded-md">
+      <button onClick={handleManage} className="bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-medium px-6 py-1 rounded-md">
         Manage Job
       </button>
     </div>

@@ -1,15 +1,31 @@
 "use client";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { isSignInWithEmailLink, signInWithEmailLink } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
-import { signInWithEmailLink, isSignInWithEmailLink } from "firebase/auth";
-import { setDoc, doc } from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
 import { toast } from "sonner";
+import { useAuth } from "@/context/AuthContext"; // 👈 TAMBAH import
 import { Spinner } from "@/components/ui/spinner";
 
 export default function VerifyPage() {
   const router = useRouter();
+  const { userData, loading } = useAuth(); // 👈 Ambil dari context
+
   useEffect(() => {
+    // Tunggu sampai context selesai loading
+    if (loading) return;
+
+    // Jika sudah login, redirect langsung
+    if (userData) {
+      if (userData.role === "admin") {
+        router.push("/admin/jobList");
+      } else {
+        router.push("/jobList");
+      }
+      return;
+    }
+
     const verifyEmailLink = async () => {
       if (isSignInWithEmailLink(auth, window.location.href)) {
         let email = window.localStorage.getItem("emailForSignIn");
@@ -19,7 +35,6 @@ export default function VerifyPage() {
         }
 
         try {
-          // ✅ Validasi email
           if (!email || email.trim() === "") {
             toast.error("Email tidak valid");
             router.push("/register");
@@ -28,16 +43,14 @@ export default function VerifyPage() {
 
           await signInWithEmailLink(auth, email, window.location.href);
 
-          // 💾 Simpan ke Firestore dengan role default "candidate"
           const userData = {
             email: email,
-            role: "candidate", // 👈 Default role = candidate
+            role: "candidate",
             status: "verified",
             verifiedAt: new Date(),
             registeredAt: new Date(),
           };
 
-          // ✅ Validasi semua field ada
           if (
             !userData.email ||
             !userData.role ||
@@ -54,31 +67,28 @@ export default function VerifyPage() {
             { merge: true }
           );
 
-          console.log("✅ Data user berhasil disimpan:", userData);
+          console.log("Data user berhasil disimpan:", userData);
 
           window.localStorage.removeItem("emailForSignIn");
           toast.success("Akun berhasil diverifikasi!");
 
-          // 🔀 PERUBAHAN: Cek role dan redirect ke halaman sesuai role
           if (userData.role === "admin") {
-            router.push("/admin/jobList"); // 👈 Admin ke admin/jobList
+            router.push("/admin/jobList");
           } else {
-            router.push("/jobList"); // 👈 Candidate ke jobList biasa
+            router.push("/jobList");
           }
         } catch (error) {
-          console.error("❌ Error verifikasi:", error);
+          console.error("Error verifikasi:", error);
           toast.error("Verifikasi gagal. Coba lagi nanti.");
         }
       } else {
-        // Jika bukan link valid, arahkan ke register
-        toast.error("gagal");
-        console.log("gagal");
+        toast.error("Link verifikasi tidak valid");
         router.push("/register");
       }
     };
 
     verifyEmailLink();
-  }, [router]);
+  }, [router, userData, loading]); 
 
   return (
     <div className="min-h-screen flex items-center justify-center">

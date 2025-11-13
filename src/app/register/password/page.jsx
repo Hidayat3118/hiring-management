@@ -181,7 +181,6 @@ const RegisterForm = () => {
               <input
                 type="email"
                 id="email"
-                placeholder="contoh@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className={`w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-teal-400 focus:outline-none ${

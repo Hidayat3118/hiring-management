@@ -8,8 +8,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
-import { auth, provider, db } from "@/lib/firebase"; // 👈 TAMBAH db
-import { doc, getDoc } from "firebase/firestore"; // 👈 TAMBAH INI
+import { auth, provider, db } from "@/lib/firebase"; 
+import { doc, getDoc } from "firebase/firestore"; 
 
 export default function Home() {
   const router = useRouter();
@@ -22,7 +22,7 @@ export default function Home() {
     general: "",
   });
 
-  // 🔹 Login pakai Google
+  // Login pakai Google
   const handleGoogleLogin = async () => {
     try {
       setLoading(true);
@@ -56,7 +56,7 @@ export default function Home() {
     }
   };
 
-  // 🔹 Login pakai email dan password
+  // Login pakai email dan password
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -72,11 +72,11 @@ export default function Home() {
     }
 
     try {
-      // 🔸 Login dengan email + password
+      //  Login dengan email + password
       const result = await signInWithEmailAndPassword(auth, email, password);
       const user = result.user;
 
-      // 🔍 PERBAIKAN: Ambil userData dari Firestore
+      // PERBAIKAN: Ambil userData dari Firestore
       const userDoc = await getDoc(doc(db, "registeredEmails", user.email));
 
       if (userDoc.exists()) {
@@ -85,9 +85,9 @@ export default function Home() {
 
         toast.success("Berhasil login!");
 
-        // 🔁 Redirect sesuai role
+        // Redirect sesuai role
         if (userData.role === "admin") {
-          console.log("🔐 Redirect ke /admin/jobList");
+          console.log("Redirect ke /admin/jobList");
           router.push("/admin/jobList"); // 👈 Admin ke admin/jobList
         } else {
           console.log("👤 Redirect ke /jobList");
@@ -163,7 +163,6 @@ export default function Home() {
               <input
                 type="email"
                 id="email"
-                placeholder="contoh@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className={`w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-teal-400 focus:outline-none ${
