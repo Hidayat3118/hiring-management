@@ -1,5 +1,6 @@
 "use client";
 import { useSearchParams } from "next/navigation";
+import Image from "next/image";
 export default function CheckEmailPage() {
   const params = useSearchParams();
   const email = params.get("email");
@@ -17,7 +18,12 @@ export default function CheckEmailPage() {
 
         {/* Gambar ilustrasi */}
         <div className="flex justify-center">
-        
+          <Image
+          src={"/verify.jfif"}
+          alt="Verifying Account"
+          width={200}
+          height={200}
+        />
         </div>
       </div>
     </div>
