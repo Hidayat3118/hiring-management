@@ -2,12 +2,12 @@
 import { Suspense } from "react";
 import dynamic from "next/dynamic";
 
-const CheckEmailClient = dynamic(() => import("./checkEmailClient"));
+const VerifyClient = dynamic(() => import("./verifyClient"));
 
 export default function ClientWrapper() {
   return (
     <Suspense>
-      <CheckEmailClient />
+      <VerifyClient />
     </Suspense>
   );
 }
