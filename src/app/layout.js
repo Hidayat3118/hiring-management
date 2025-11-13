@@ -1,4 +1,3 @@
-'use client';
 import "./globals.css";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import { Toaster } from "sonner";
