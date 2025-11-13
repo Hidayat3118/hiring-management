@@ -20,7 +20,7 @@ export default function CheckEmailClient() {
 
         <div className="flex justify-center">
           <Image
-            src={"/verify.jfif"}
+            src={"/verify.PNG"}
             alt="Verifying Account"
             width={200}
             height={200}
