@@ -27,16 +27,12 @@ Admin dapat membuat lowongan kerja dengan konfigurasi field dinamis, dan Applica
 ## ⚙️ How to Run Locally
 ```bash
 # 1. Clone repository
-git clone https://github.com/hidayatdev/hiring-platform.git
-cd hiring-platform
+git https://github.com/Hidayat3118/hiring-management
+cd hiring-management
+code . 
 
 # 2. Install dependencies
 npm install
-
-# 3. Setup environment variables
-# Create .env.local file and add your Firebase config
-NEXT_PUBLIC_FIREBASE_API_KEY=xxxx
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=xxxx
 
 # 4. Run the development server
 npm run dev
