@@ -5,13 +5,13 @@ Developed by **Muhammad Hidayat**
 
 ---
 
-## 🚀 Project Overview
+##  Project Overview
 Aplikasi web untuk mengelola proses rekrutmen antara **Recruiter (Admin)** dan **Job Seeker (Applicant)**.  
 Admin dapat membuat lowongan kerja dengan konfigurasi field dinamis, dan Applicant dapat melamar pekerjaan sesuai konfigurasi tersebut.
 
 ---
 
-## 🧩 Tech Stack Used
+##  Tech Stack Used
 - **Framework:** Next.js (App Router)
 - **Styling:** TailwindCSS + shadcn/ui
 - **State Management:** Zustand
@@ -24,7 +24,7 @@ Admin dapat membuat lowongan kerja dengan konfigurasi field dinamis, dan Applica
 
 ---
 
-## ⚙️ How to Run Locally
+##  How to Run Locally
 ```bash
 # 1. Clone repository
 git https://github.com/Hidayat3118/hiring-management
