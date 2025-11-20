@@ -14,14 +14,10 @@ Admin dapat membuat lowongan kerja dengan konfigurasi field dinamis, dan Applica
 ##  Tech Stack Used
 - **Framework:** Next.js (App Router)
 - **Styling:** TailwindCSS + shadcn/ui
-- **State Management:** Zustand
+- **State Management:** Context
 - **Backend:** Firebase (Auth + Firestore)
-- **Form Handling:** React Hook Form
 - **Deployment:** Vercel
 - **Icons:** Lucide-react
-- **Animation:** Framer Motion
-- **Webcam/Gesture:** Tensorflow Handpose (optional)
-
 ---
 
 ##  How to Run Locally
