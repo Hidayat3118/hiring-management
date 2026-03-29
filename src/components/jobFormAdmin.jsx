@@ -19,9 +19,9 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner"; // 👈 TAMBAH
-import { db } from "@/lib/firebase"; // 👈 TAMBAH
-import { collection, addDoc, serverTimestamp } from "firebase/firestore"; // 👈 TAMBAH
+import { toast } from "sonner"; 
+import { db } from "@/lib/firebase"; 
+import { collection, addDoc, serverTimestamp } from "firebase/firestore"; 
 
 export default function JobFormAdmin({ open, onOpenChange }) {
   const [loading, setLoading] = useState(false);
@@ -33,6 +33,7 @@ export default function JobFormAdmin({ open, onOpenChange }) {
     candidate: "",
     minSalary: "",
     maxSalary: "",
+    location:"",
   });
 
   const [requirements, setRequirements] = useState({
@@ -57,9 +58,9 @@ export default function JobFormAdmin({ open, onOpenChange }) {
 
   const allFilled = Object.values(form).every((val) => val !== "");
 
-  // 💾 Simpan ke Firestore
+  // Simpan ke Firestore
   const handleSubmit = async (e) => {
-    e.preventDefault(); // 👈 Prevent default form submit
+    e.preventDefault(); 
 
     if (!allFilled) {
       toast.error("Harap isi semua field yang wajib!");
@@ -69,7 +70,7 @@ export default function JobFormAdmin({ open, onOpenChange }) {
     setLoading(true);
 
     try {
-      // 📊 Struktur data yang akan disimpan
+      //Struktur data yang akan disimpan
       const jobData = {
         namaLoker: form.jobName,
         tipeLoker: form.jobType,
@@ -77,18 +78,19 @@ export default function JobFormAdmin({ open, onOpenChange }) {
         jumlahKandidat: parseInt(form.candidate),
         gajiMinimum: form.minSalary,
         gajiMaksimum: form.maxSalary,
+        lokasi : form.location,
         persyaratanProfil: requirements,
         tanggalBuat: serverTimestamp(),
         status: "aktif",
       };
 
-      // 🔸 Tambah ke collection "lowonganKerja"
+      // Tambah ke collection "lowonganKerja"
       const docRef = await addDoc(collection(db, "lowonganKerja"), jobData);
 
       console.log("Loker berhasil disimpan dengan ID:", docRef.id);
       toast.success("Lowongan kerja berhasil dipublikasikan!");
 
-      // 🔄 Reset form
+      // Reset form
       setForm({
         jobName: "",
         jobType: "",
@@ -96,6 +98,7 @@ export default function JobFormAdmin({ open, onOpenChange }) {
         candidate: "",
         minSalary: "",
         maxSalary: "",
+        location: "",
       });
 
       setRequirements({
@@ -161,7 +164,7 @@ export default function JobFormAdmin({ open, onOpenChange }) {
           </DialogTitle>
         </DialogHeader>
 
-        {/* 🔹 GUNAKAN FORM TAG */}
+        {/* form tag */}
         <form onSubmit={handleSubmit} className="space-y-5 mt-4">
           {/* Job Name */}
           <div>
@@ -207,6 +210,21 @@ export default function JobFormAdmin({ open, onOpenChange }) {
               name="jobDesc"
               placeholder="Ex. Describe the job description..."
               value={form.jobDesc}
+              onChange={handleChange}
+              required
+              className="mt-1 border-gray-300 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100 placeholder:text-gray-400"
+            />
+          </div>
+
+          {/* Location */}
+          <div>
+            <Label className="text-gray-700">
+              Location<span className="text-red-500">*</span>
+            </Label>
+            <Textarea
+              name="location"
+              placeholder="Location"
+              value={form.location}
               onChange={handleChange}
               required
               className="mt-1 border-gray-300 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100 placeholder:text-gray-400"

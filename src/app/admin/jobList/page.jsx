@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FiSearch } from "react-icons/fi";
-import { IoLogOut } from "react-icons/io5";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Image from "next/image";
 import JobFormAdmin from "@/components/jobFormAdmin";
 import { useState } from "react";
@@ -13,13 +13,14 @@ import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
+import { IoLogOutOutline } from "react-icons/io5";
+import { HiOutlineUserCircle } from "react-icons/hi2";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu"; // 👈 TAMBAH import
+} from "@/components/ui/dropdown-menu"; 
 import { Spinner } from "@/components/ui/spinner";
 
 export default function JobList() {
@@ -30,7 +31,7 @@ export default function JobList() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isLogoutLoading, setIsLogoutLoading] = useState(false);
 
-  // 🔐 Cek authorization
+  // Cek role admin
   useEffect(() => {
     if (!loading && (!user || userData?.role !== "admin")) {
       toast.error("Anda tidak memiliki akses ke halaman ini");
@@ -38,6 +39,7 @@ export default function JobList() {
     }
   }, [user, userData, loading, router]);
 
+  // nampilin lowongan kerja
   useEffect(() => {
     const fetchJobs = async () => {
       try {
@@ -76,7 +78,7 @@ export default function JobList() {
     });
   };
 
-  // 🔓 Logout handler
+  // Logout handler
   const handleLogout = async () => {
     try {
       setIsLogoutLoading(true);
@@ -92,14 +94,14 @@ export default function JobList() {
   };
 
   const filteredJobs = lowonganKerja.filter((job) =>
-    job.namaLoker.toLowerCase().includes(searchQuery.toLowerCase())
+    job.namaLoker.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  // 💫 Loading state
+  // Loading state
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Spinner className="size-16"/>
+        <Spinner className="size-16" />
       </div>
     );
   }
@@ -112,55 +114,65 @@ export default function JobList() {
   return (
     <main className="flex flex-col items-center px-6 py-8 max-w-7xl mx-auto">
       {/* Header */}
-      <header className="w-full max-w-7xl flex justify-between items-center mb-6">
+      <header className="w-full max-w-7xl flex justify-between items-center mb-6 ">
         <h1 className="text-lg font-semibold text-gray-800">Job List</h1>
 
-        {/* 🔹 Dropdown Menu */}
+        {/* Dropdown Menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition">
+            <button className="flex items-center gap-3 cursor-pointer group rounded-full ">
               {/* Avatar */}
-              <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-200">
-                <Image
-                  src="/default.png"
-                  height={100}
-                  width={100}
-                  alt="User Avatar"
-                  className="w-full h-full object-cover"
+              <Avatar className="w-11 h-11 cursor-pointer hover:opacity-80 transition">
+                <AvatarImage
+                  src={user?.photoURL || "https://github.com/shadcn.png"}
+                  alt="Profile"
                 />
-              </div>
+                <AvatarFallback>
+                  {user?.email ? user.email.charAt(0).toUpperCase() : "CN"}
+                </AvatarFallback>
+              </Avatar>
             </button>
           </DropdownMenuTrigger>
 
-          <DropdownMenuContent align="end" className="w-56">
-            {/* User Info di Menu */}
-            <div className="px-2 py-1.5">
-              <p className="text-sm font-medium text-gray-800">
-                {user?.email}
-              </p>
-              <p className="text-xs text-gray-500 mt-1">
-                Role:{" "}
-                <span className="font-semibold text-cyan-600">Admin</span>
-              </p>
+          <DropdownMenuContent
+            align="end"
+            className="w-64 rounded-xl shadow-lg border border-gray-100 p-2"
+          >
+            {/* User Info */}
+            <div className="flex items-center gap-3 px-3 py-3 border-b border-gray-100">
+              <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                <HiOutlineUserCircle size={24} className="text-gray-500" />
+              </div>
+
+              <div className="flex flex-col">
+                <p className="text-sm font-semibold text-gray-800 truncate max-w-[140px]">
+                  {user?.email}
+                </p>
+                <p className="text-xs text-gray-500">
+                  Role: <span className="font-medium text-cyan-600">Admin</span>
+                </p>
+              </div>
             </div>
 
             {/* Logout */}
             <DropdownMenuItem
               onClick={handleLogout}
               disabled={isLogoutLoading}
-              className="cursor-pointer text-red-600 hover:bg-red-50 focus:bg-red-50"
+              className="mt-2 flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer text-red-600 hover:bg-red-50 focus:bg-red-50 transition"
             >
-              <IoLogOut className="mr-2" size={18} />
-              {isLogoutLoading ? "Logging out..." : "Logout"}
+              <IoLogOutOutline size={18} />
+              <span className="text-sm font-medium">
+                {isLogoutLoading ? "Logging out..." : "Logout"}
+              </span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </header>
 
       {/* Search + Side Card */}
-      <div className="w-full flex gap-6 mb-10">
+      <div className="w-full flex gap-6 mb-10 ">
+        <div className="flex-1 ">
         {/* Search Bar */}
-        <div className="flex-1">
           <div className="relative">
             <input
               type="text"
@@ -171,12 +183,59 @@ export default function JobList() {
             />
             <FiSearch className="absolute right-3 top-2.5 text-gray-500 text-lg" />
           </div>
+          {/* Card job */}
+          <div className="w-full mt-4 md:mt-10">
+            {filteredJobs && filteredJobs.length > 0 ? (
+              filteredJobs.map((job) => (
+                <div key={job.id} className="w-full mb-6">
+                  <JobCard
+                    id={job.id}
+                    gajiMaksimum={job.gajiMaksimum}
+                    gajiMinimum={job.gajiMinimum}
+                    status={job.status}
+                    waktuBuat={formatDate(job.tanggalBuat)}
+                    namaJob={job.namaLoker}
+                  />
+                </div>
+              ))
+            ) : (
+              <section className="flex flex-col items-center justify-center text-center mt-10">
+                <Image
+                  src="/serch.svg"
+                  alt="Create job"
+                  width={224}
+                  height={224}
+                  quality={100}
+                  sizes="(max-width: 768px) 50vw, 224px"
+                  className="w-72 object-contain mb-8"
+                />
+
+                <h2 className="text-gray-800 font-medium text-lg">
+                  {searchQuery ? "No jobs found" : "No job openings available"}
+                </h2>
+                <p className="text-gray-500 text-sm max-w-md mt-1">
+                  {searchQuery
+                    ? `Try searching with different keywords`
+                    : "Create a job opening now and start the candidate process."}
+                </p>
+
+                {!searchQuery && (
+                  <button
+                    onClick={() => setOpen(true)}
+                    className="mt-5 bg-amber-400 cursor-pointer hover:bg-amber-500 text-gray-800 font-medium py-2 px-5 rounded-md shadow-sm flex items-center gap-2 transition"
+                  >
+                    Create a new job
+                  </button>
+                )}
+              </section>
+            )}
+          </div>
         </div>
 
         {/* Side Ad / Card */}
-        <div className="relative w-96 rounded-xl shadow-lg overflow-hidden flex-shrink-0">
+        <div className="relative w-96 h-40 rounded-xl shadow-lg overflow-hidden flex-shrink-0">
           <div className="absolute inset-0 bg-[url('/mengajar.jpg')] bg-cover bg-center"></div>
-          <div className="absolute inset-0 bg-black/70"></div>
+          <div className="absolute inset-0 bg-black/60"></div>
           <div className="relative z-10 text-white p-6 grid">
             <h3 className="font-medium text-sm mb-3">
               Recruit the best candidates
@@ -192,54 +251,6 @@ export default function JobList() {
             </button>
           </div>
         </div>
-      </div>
-
-      {/* Card job */}
-      <div className="w-full">
-        {filteredJobs && filteredJobs.length > 0 ? (
-          filteredJobs.map((job) => (
-            <div key={job.id} className="w-full mb-6">
-              <JobCard
-                id={job.id}
-                gajiMaksimum={job.gajiMaksimum}
-                gajiMinimum={job.gajiMinimum}
-                status={job.status}
-                waktuBuat={formatDate(job.tanggalBuat)}
-                namaJob={job.namaLoker}
-              />
-            </div>
-          ))
-        ) : (
-          <section className="flex flex-col items-center justify-center text-center mt-10">
-            <Image
-              src="/serch.svg"
-              alt="Create job"
-              width={224}
-              height={224}
-              quality={100}
-              sizes="(max-width: 768px) 50vw, 224px"
-              className="w-72 object-contain mb-8"
-            />
-
-            <h2 className="text-gray-800 font-medium text-lg">
-              {searchQuery ? "No jobs found" : "No job openings available"}
-            </h2>
-            <p className="text-gray-500 text-sm max-w-md mt-1">
-              {searchQuery
-                ? `Try searching with different keywords`
-                : "Create a job opening now and start the candidate process."}
-            </p>
-
-            {!searchQuery && (
-              <button
-                onClick={() => setOpen(true)}
-                className="mt-5 bg-amber-400 cursor-pointer hover:bg-amber-500 text-gray-800 font-medium py-2 px-5 rounded-md shadow-sm flex items-center gap-2 transition"
-              >
-                Create a new job
-              </button>
-            )}
-          </section>
-        )}
       </div>
 
       <JobFormAdmin open={open} onOpenChange={setOpen} />

@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import { db } from "@/lib/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { IoSearch } from "react-icons/io5"; // 👈 TAMBAH icon search
+import { useEffect } from "react";
+import { Spinner } from "@/components/ui/spinner";
 
 // Data negara dengan bendera emoji (5 contoh)
 const COUNTRIES = [
@@ -32,6 +34,7 @@ export default function ApplyForm() {
   const [countryCode, setCountryCode] = useState("+62");
   const [searchCountry, setSearchCountry] = useState("");
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
 
   const [form, setForm] = useState({
     fullName: "",
@@ -59,14 +62,14 @@ export default function ApplyForm() {
     setErrors({ ...errors, [name]: "" });
   };
 
-  // 🔍 Filter negara berdasarkan search
+  // Filter negara berdasarkan search
   const filteredCountries = COUNTRIES.filter(
     (country) =>
       country.name.toLowerCase().includes(searchCountry.toLowerCase()) ||
-      country.dial.includes(searchCountry)
+      country.dial.includes(searchCountry),
   );
 
-  // 🔄 Pilih negara
+  // pilih negara
   const handleSelectCountry = (dial) => {
     setCountryCode(dial);
     setSearchCountry("");
@@ -74,11 +77,10 @@ export default function ApplyForm() {
   };
 
   // Dapatkan bendera negara yang dipilih
-  const selectedCountryFlag = COUNTRIES.find(
-    (c) => c.dial === countryCode
-  )?.flag || "🏳️";
+  const selectedCountryFlag =
+    COUNTRIES.find((c) => c.dial === countryCode)?.flag || "🏳️";
 
-  // ✅ Validasi form
+  //Validasi form
   const validateForm = () => {
     const newErrors = {};
 
@@ -120,7 +122,7 @@ export default function ApplyForm() {
     return Object.keys(newErrors).length === 0;
   };
 
-  // 💾 Submit form
+  // Handle tambah lamaran
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -147,7 +149,7 @@ export default function ApplyForm() {
 
       const docRef = await addDoc(
         collection(db, "applications"),
-        applicationData
+        applicationData,
       );
 
       console.log("✅ Aplikasi berhasil disimpan dengan ID:", docRef.id);
@@ -169,12 +171,29 @@ export default function ApplyForm() {
         router.push("/jobList");
       }, 2000);
     } catch (error) {
-      console.error("❌ Error menyimpan aplikasi:", error);
-      toast.error("Gagal mengirim aplikasi. Coba lagi nanti.");
+      console.error("❌ Error menyimpan Lamaran:", error);
+      toast.error("Gagal mengirim Lamaran. Coba lagi nanti.");
     } finally {
       setLoading(false);
     }
   };
+
+  // loading halaman
+  useEffect(() => {
+    const loadPage = async () => {
+      setPageLoading(false);
+    };
+
+    loadPage();
+  }, []);
+
+  if (pageLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Spinner className="size-16" />
+      </div>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-gray-50 flex justify-center items-start py-10 px-4">
@@ -200,7 +219,9 @@ export default function ApplyForm() {
               Field ini wajib diisi
             </div>
           </div>
-          <p className="text-red-500 font-semibold text-sm mb-6">*Wajib diisi</p>
+          <p className="text-red-500 font-semibold text-sm mb-6">
+            *Wajib diisi
+          </p>
 
           {/* Full Name */}
           <div className="mb-4">
@@ -320,9 +341,7 @@ export default function ApplyForm() {
                 {/* Country Button */}
                 <button
                   type="button"
-                  onClick={() =>
-                    setShowCountryDropdown(!showCountryDropdown)
-                  }
+                  onClick={() => setShowCountryDropdown(!showCountryDropdown)}
                   className="flex items-center gap-2 px-3 py-2 border-r border-gray-300 hover:bg-gray-50 text-gray-700 font-medium min-w-max"
                 >
                   <span className="text-xl">{selectedCountryFlag}</span>
