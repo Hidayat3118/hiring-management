@@ -145,7 +145,8 @@ const RegisterForm = () => {
         {/* Logo */}
         <div className="flex justify-start">
           <Image
-            src={"/rekamin.png"}
+            src={"/perusahaan.svg"}
+            className="h-14 w-14 ml-8 mb-4"
             width={150}
             height={100}
             alt="icon rekamin"
@@ -156,7 +157,7 @@ const RegisterForm = () => {
         <div className="pb-8 pl-8 pr-8">
           {/* Title */}
           <h2 className="text-lg text-neutral-700 font-semibold text-left mb-2">
-            Bergabung dengan Rakamin
+            Bergabung dengan PT Mencari Kerja 
           </h2>
           <p className="text-left text-gray-600 text-sm mb-6">
             Sudah punya akun?{" "}

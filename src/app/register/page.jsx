@@ -60,7 +60,7 @@ const Register = () => {
     } catch (err) {
       // console.error("Firebase error:", err.code, err.message);
 
-      // 🎯 Menangani jenis error berbeda
+      // Menangani jenis error berbeda
       if (err.code === "auth/quota-exceeded") {
         toast.error(
           "Kouta pengiriman email Firebase sudah habis hari ini. Coba lagi besok"
@@ -98,7 +98,8 @@ const Register = () => {
       <div className="bg-white rounded-lg shadow-md w-full max-w-lg">
         <div className="flex justify-start">
           <Image
-            src="/rekamin.png"
+            src="/perusahaan.svg"
+            className="h-14 w-14 ml-8 mb-4"
             width={150}
             height={100}
             alt="icon rekamin"

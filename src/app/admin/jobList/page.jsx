@@ -7,8 +7,8 @@ import Image from "next/image";
 import JobFormAdmin from "@/components/jobFormAdmin";
 import { useState } from "react";
 import { db } from "@/lib/firebase";
-import { collection, getDocs } from "firebase/firestore";
-import JobCard from "@/components/jobCard";
+import { collection, deleteDoc, getDocs, doc } from "firebase/firestore";
+import JobCard from "@/components/jobCardAdmin";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 import { signOut } from "firebase/auth";
@@ -20,7 +20,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-} from "@/components/ui/dropdown-menu"; 
+} from "@/components/ui/dropdown-menu";
 import { Spinner } from "@/components/ui/spinner";
 
 export default function JobList() {
@@ -93,9 +93,21 @@ export default function JobList() {
     }
   };
 
+  // serch or filter lowongan perkerjaan
   const filteredJobs = lowonganKerja.filter((job) =>
     job.namaLoker.toLowerCase().includes(searchQuery.toLowerCase()),
   );
+
+  // function hapus loker
+  const deleteLowongan = async (id) => {
+    try {
+      await deleteDoc(doc(db, "lowonganKerja", id));
+      setLowonganKerja(prev => prev.filter(item => item.id !== id));
+      toast.success("Lowongan berhasil di hapus");
+    } catch (error) {
+      console.error("gagal menghapus", error);
+    }
+  };
 
   // Loading state
   if (loading) {
@@ -115,7 +127,9 @@ export default function JobList() {
     <main className="flex flex-col items-center px-6 py-8 max-w-7xl mx-auto">
       {/* Header */}
       <header className="w-full max-w-7xl flex justify-between items-center mb-6 ">
-        <h1 className="text-lg font-semibold text-gray-800">Job List</h1>
+        <h1 className="text-lg md:text-xl font-semibold text-gray-800">
+          Job List
+        </h1>
 
         {/* Dropdown Menu */}
         <DropdownMenu>
@@ -169,60 +183,66 @@ export default function JobList() {
         </DropdownMenu>
       </header>
 
-      {/* Search + Side Card */}
-      <div className="w-full flex gap-6 mb-10 ">
-        <div className="flex-1 ">
-        {/* Search Bar */}
-          <div className="relative">
+      <div className="w-full flex flex-col lg:flex-row gap-6 mb-10">
+        {/* LEFT CONTENT */}
+        <div className="flex-1">
+          {/* SEARCH BAR */}
+          <div className="relative mb-4 md:mb-6">
+            <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg" />
+
             <input
               type="text"
-              placeholder="Search by job name"
+              placeholder="Cari lowongan pekerjaan..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full border border-gray-300 rounded-md py-2 pl-4 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              className="w-full border border-gray-300 rounded-lg py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition"
             />
-            <FiSearch className="absolute right-3 top-2.5 text-gray-500 text-lg" />
           </div>
-          {/* Card job */}
-          <div className="w-full mt-4 md:mt-10">
+
+          {/* JOB LIST */}
+          <div className="w-full">
             {filteredJobs && filteredJobs.length > 0 ? (
-              filteredJobs.map((job) => (
-                <div key={job.id} className="w-full mb-6">
-                  <JobCard
-                    id={job.id}
-                    gajiMaksimum={job.gajiMaksimum}
-                    gajiMinimum={job.gajiMinimum}
-                    status={job.status}
-                    waktuBuat={formatDate(job.tanggalBuat)}
-                    namaJob={job.namaLoker}
-                  />
-                </div>
-              ))
+              <div className="space-y-4">
+                {filteredJobs.map((job) => (
+                  <div key={job.id}>
+                    <JobCard
+                      id={job.id}
+                      gajiMaksimum={job.gajiMaksimum}
+                      gajiMinimum={job.gajiMinimum}
+                      status={job.status}
+                      waktuBuat={formatDate(job.tanggalBuat)}
+                      namaJob={job.namaLoker}
+                      onDelete={deleteLowongan}
+                    />
+                  </div>
+                ))}
+              </div>
             ) : (
-              <section className="flex flex-col items-center justify-center text-center mt-10">
+              <section className="flex flex-col items-center justify-center text-center mt-12 px-4">
                 <Image
                   src="/serch.svg"
-                  alt="Create job"
-                  width={224}
-                  height={224}
-                  quality={100}
-                  sizes="(max-width: 768px) 50vw, 224px"
-                  className="w-72 object-contain mb-8"
+                  alt="Empty state"
+                  width={200}
+                  height={200}
+                  className="w-52 md:w-64 object-contain mb-6 opacity-90"
                 />
 
-                <h2 className="text-gray-800 font-medium text-lg">
-                  {searchQuery ? "No jobs found" : "No job openings available"}
-                </h2>
-                <p className="text-gray-500 text-sm max-w-md mt-1">
+                <h2 className="text-gray-800 font-semibold text-lg">
                   {searchQuery
-                    ? `Try searching with different keywords`
-                    : "Create a job opening now and start the candidate process."}
+                    ? "Lowongan tidak ditemukan"
+                    : "Belum ada lowongan"}
+                </h2>
+
+                <p className="text-gray-500 text-sm max-w-md mt-2">
+                  {searchQuery
+                    ? "Coba gunakan kata kunci lain"
+                    : "Buat lowongan baru untuk mulai merekrut kandidat terbaik."}
                 </p>
 
                 {!searchQuery && (
                   <button
                     onClick={() => setOpen(true)}
-                    className="mt-5 bg-amber-400 cursor-pointer hover:bg-amber-500 text-gray-800 font-medium py-2 px-5 rounded-md shadow-sm flex items-center gap-2 transition"
+                    className="mt-5 bg-amber-400 hover:bg-amber-500 text-gray-800 font-medium py-2.5 px-5 rounded-lg shadow-sm flex items-center gap-2 transition"
                   >
                     Create a new job
                   </button>
@@ -232,28 +252,36 @@ export default function JobList() {
           </div>
         </div>
 
-        {/* Side Ad / Card */}
-        <div className="relative w-96 h-40 rounded-xl shadow-lg overflow-hidden flex-shrink-0">
-          <div className="absolute inset-0 bg-[url('/mengajar.jpg')] bg-cover bg-center"></div>
-          <div className="absolute inset-0 bg-black/60"></div>
-          <div className="relative z-10 text-white p-6 grid">
-            <h3 className="font-medium text-sm mb-3">
-              Recruit the best candidates
-            </h3>
-            <p className="text-xs text-gray-200 mb-6">
-              Create jobs, invite, and hire with ease
-            </p>
-            <button
-              onClick={() => setOpen(true)}
-              className="w-full cursor-pointer bg-cyan-700 hover:bg-cyan-800 text-white py-2 rounded-md text-sm font-medium flex items-center justify-center gap-2"
-            >
-              Create a new job
-            </button>
+        {/* RIGHT SIDE CARD */}
+        <div className="w-full lg:w-80 flex-shrink-0">
+          <div className="relative rounded-2xl overflow-hidden shadow-md h-48 lg:h-60 lg:sticky lg:top-24">
+            {/* Background */}
+            <div className="absolute inset-0 bg-[url('/mengajar.jpg')] bg-cover bg-center"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent"></div>
+
+            {/* Content */}
+            <div className="relative z-10 text-white p-5 flex flex-col justify-end h-full">
+              <h3 className="font-semibold text-sm mb-1">
+                Recruit the best candidates
+              </h3>
+
+              <p className="text-xs text-gray-200 mb-4">
+                Create jobs, invite, and hire with ease
+              </p>
+
+              <button
+                onClick={() => setOpen(true)}
+                className="w-full bg-cyan-600 cursor-pointer hover:bg-cyan-700 text-white py-2.5 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition"
+              >
+                Create a new job
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
       <JobFormAdmin open={open} onOpenChange={setOpen} />
+      
     </main>
   );
 }

@@ -61,14 +61,11 @@ export default function JobFormAdmin({ open, onOpenChange }) {
   // Simpan ke Firestore
   const handleSubmit = async (e) => {
     e.preventDefault(); 
-
     if (!allFilled) {
       toast.error("Harap isi semua field yang wajib!");
       return;
     }
-
     setLoading(true);
-
     try {
       //Struktur data yang akan disimpan
       const jobData = {
@@ -83,10 +80,8 @@ export default function JobFormAdmin({ open, onOpenChange }) {
         tanggalBuat: serverTimestamp(),
         status: "aktif",
       };
-
       // Tambah ke collection "lowonganKerja"
       const docRef = await addDoc(collection(db, "lowonganKerja"), jobData);
-
       console.log("Loker berhasil disimpan dengan ID:", docRef.id);
       toast.success("Lowongan kerja berhasil dipublikasikan!");
 

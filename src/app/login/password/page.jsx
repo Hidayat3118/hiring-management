@@ -128,7 +128,8 @@ export default function Home() {
         {/* Logo */}
         <div className="flex justify-start">
           <Image
-            src={"/rekamin.png"}
+            src={"/perusahaan.svg"}
+            className="h-14 w-14 ml-8 mb-4"
             width={150}
             height={100}
             alt="icon rekamin"
@@ -138,7 +139,7 @@ export default function Home() {
 
         <div className="pb-8 pl-8 pr-8">
           <h2 className="text-lg text-neutral-700 font-semibold text-left mb-2">
-            Masuk dengan Rakamin
+            Masuk dengan PT Mencari Kerja Sejati
           </h2>
           <p className="text-left text-gray-600 text-sm mb-6">
             Belum punya akun?{" "}
@@ -146,7 +147,7 @@ export default function Home() {
               href="/register/password"
               className="text-teal-400 hover:underline font-medium"
             >
-              Daftar Menggunakan Email
+              Daftar Menggunakan Kata Sandi
             </Link>
           </p>
 

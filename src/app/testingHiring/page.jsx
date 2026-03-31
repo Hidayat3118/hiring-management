@@ -1,13 +1,23 @@
+"use client";
 
+import { useState } from "react";
+import { PhoneInput } from "react-international-phone";
+import "react-international-phone/style.css";
 
-const Testing = async () => {
-  await new Promise((resolve) => {
-    setTimeout(() => {
-      resolve("internation delay");
-    }, 2000);
-  });
+export default function PhoneField() {
+  const [phone, setPhone] = useState("");
 
-  return <div>Testing halaman</div>;
-};
+  return (
+    <div className="space-y-2">
+      <label className="text-sm font-medium text-slate-700">
+        Phone Number
+      </label>
 
-export default Testing;
+      <PhoneInput
+        defaultCountry="id"
+        value={phone}
+        onChange={(phone) => setPhone(phone)}
+      />
+    </div>
+  );
+}

@@ -2,40 +2,68 @@
 import { useState } from "react";
 import { TbInfoSquareFilled } from "react-icons/tb";
 import { FaArrowLeft } from "react-icons/fa6";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { db } from "@/lib/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { IoSearch } from "react-icons/io5"; // 👈 TAMBAH icon search
+import { IoSearch } from "react-icons/io5";
 import { useEffect } from "react";
 import { Spinner } from "@/components/ui/spinner";
+import { FiUpload, FiFileText } from "react-icons/fi";
+import { PhoneInput } from "react-international-phone";
+import "react-international-phone/style.css";
 
-// Data negara dengan bendera emoji (5 contoh)
-const COUNTRIES = [
-  { code: "ID", dial: "+62", name: "Indonesia", flag: "🇮🇩" },
-  { code: "MY", dial: "+60", name: "Malaysia", flag: "🇲🇾" },
-  { code: "SG", dial: "+65", name: "Singapore", flag: "🇸🇬" },
-  { code: "TH", dial: "+66", name: "Thailand", flag: "🇹🇭" },
-  { code: "PH", dial: "+63", name: "Philippines", flag: "🇵🇭" },
-];
-
-// 🏙️ Data provinsi Indonesia (5 contoh)
+// Data provinsi Indonesia (5 contoh)
 const INDONESIAN_PROVINCES = [
+  "Aceh",
+  "Sumatera Utara",
+  "Sumatera Barat",
+  "Riau",
+  "Kepulauan Riau",
+  "Jambi",
+  "Sumatera Selatan",
+  "Bangka Belitung",
+  "Bengkulu",
+  "Lampung",
   "DKI Jakarta",
   "Jawa Barat",
+  "Banten",
+  "Jawa Tengah",
+  "DI Yogyakarta",
   "Jawa Timur",
   "Bali",
-  "Sumatera Utara",
+  "Nusa Tenggara Barat",
+  "Nusa Tenggara Timur",
+  "Kalimantan Barat",
+  "Kalimantan Tengah",
+  "Kalimantan Selatan",
+  "Kalimantan Timur",
+  "Kalimantan Utara",
+  "Sulawesi Utara",
+  "Gorontalo",
+  "Sulawesi Tengah",
+  "Sulawesi Barat",
+  "Sulawesi Selatan",
+  "Sulawesi Tenggara",
+  "Maluku",
+  "Maluku Utara",
+  "Papua",
+  "Papua Barat",
+  "Papua Selatan",
+  "Papua Tengah",
+  "Papua Pegunungan",
+  "Papua Barat Daya",
 ];
 
 export default function ApplyForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [countryCode, setCountryCode] = useState("+62");
-  const [searchCountry, setSearchCountry] = useState("");
-  const [showCountryDropdown, setShowCountryDropdown] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
+  const [file, setFile] = useState(null);
+  const { id } = useParams();
 
+  // state form
   const [form, setForm] = useState({
     fullName: "",
     dob: "",
@@ -62,27 +90,10 @@ export default function ApplyForm() {
     setErrors({ ...errors, [name]: "" });
   };
 
-  // Filter negara berdasarkan search
-  const filteredCountries = COUNTRIES.filter(
-    (country) =>
-      country.name.toLowerCase().includes(searchCountry.toLowerCase()) ||
-      country.dial.includes(searchCountry),
-  );
-
-  // pilih negara
-  const handleSelectCountry = (dial) => {
-    setCountryCode(dial);
-    setSearchCountry("");
-    setShowCountryDropdown(false);
-  };
-
-  // Dapatkan bendera negara yang dipilih
-  const selectedCountryFlag =
-    COUNTRIES.find((c) => c.dial === countryCode)?.flag || "🏳️";
-
   //Validasi form
   const validateForm = () => {
     const newErrors = {};
+    const phoneDigits = (form.phone || "").replace(/\D/g, "");
 
     if (!form.fullName.trim()) {
       newErrors.fullName = "Nama lengkap wajib diisi";
@@ -100,10 +111,10 @@ export default function ApplyForm() {
       newErrors.domicile = "Domisili wajib diisi";
     }
 
-    if (!form.phone.trim()) {
+    if (!form.phone?.trim()) {
       newErrors.phone = "Nomor telepon wajib diisi";
-    } else if (!/^\d{9,}$/.test(form.phone)) {
-      newErrors.phone = "Nomor telepon minimal 9 digit";
+    } else if (phoneDigits.length < 10) {
+      newErrors.phone = "Nomor telepon minimal 10 digit";
     }
 
     if (!form.email.trim()) {
@@ -125,15 +136,50 @@ export default function ApplyForm() {
   // Handle tambah lamaran
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     if (!validateForm()) {
       toast.error("Pastikan semua data terisi dengan benar");
+      setLoading(false);
       return;
     }
 
-    setLoading(true);
+    // Validasi file CV
+    if (!file) {
+      toast.error("CV wajib diupload");
+      setLoading(false);
+      return;
+    }
+
+    if (file.type !== "application/pdf") {
+      toast.error("CV harus berupa file PDF");
+      setLoading(false);
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Ukuran CV maksimal 2MB");
+      setLoading(false);
+      return;
+    }
 
     try {
+      // 1. Upload CV ke Cloudinary lewat API route
+      const uploadFormData = new FormData();
+      uploadFormData.append("file", file);
+
+      const uploadRes = await fetch("/api/upload-cv", {
+        method: "POST",
+        body: uploadFormData,
+      });
+
+      const uploadData = await uploadRes.json();
+
+      if (!uploadRes.ok) {
+        throw new Error(uploadData.error || "Gagal upload CV");
+      }
+
+      // 2. Siapkan data lamaran + hasil upload CV
       const applicationData = {
         fullName: form.fullName.trim(),
         dob: form.dob,
@@ -144,17 +190,24 @@ export default function ApplyForm() {
         email: form.email.trim(),
         linkedin: form.linkedin.trim(),
         status: "pending",
+        jobId: id,
         appliedAt: serverTimestamp(),
+
+        // Data CV dari Cloudinary
+        resumeUrl: uploadData.resumeUrl,
+        resumePublicId: uploadData.resumePublicId,
+        resumeFileName: uploadData.resumeFileName,
       };
+
+      // 3. Simpan ke Firestore
+      console.log("applicationData FINAL:", applicationData);
 
       const docRef = await addDoc(
         collection(db, "applications"),
         applicationData,
       );
 
-      console.log("✅ Aplikasi berhasil disimpan dengan ID:", docRef.id);
-      toast.success("Aplikasi berhasil dikirim!");
-
+      // 4. Reset form
       setForm({
         fullName: "",
         dob: "",
@@ -166,13 +219,16 @@ export default function ApplyForm() {
       });
       setCountryCode("+62");
       setErrors({});
+      setFile(null);
+
+      toast.success("Aplikasi berhasil dikirim!");
 
       setTimeout(() => {
         router.push("/jobList");
-      }, 2000);
+      }, 1000);
     } catch (error) {
       console.error("❌ Error menyimpan Lamaran:", error);
-      toast.error("Gagal mengirim Lamaran. Coba lagi nanti.");
+      toast.error(error.message || "Gagal mengirim Lamaran. Coba lagi nanti.");
     } finally {
       setLoading(false);
     }
@@ -196,32 +252,40 @@ export default function ApplyForm() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 flex justify-center items-start py-10 px-4">
-      <form onSubmit={handleSubmit} className="w-full max-w-3xl p-8">
-        {/* Dialog */}
+    <main className="min-h-screen bg-gray-100 flex justify-center items-start py-10 px-4">
+      {/* form */}
+      <form onSubmit={handleSubmit} className="w-full max-w-3xl lg:p-8">
         <div className="mb-4 overflow-y-auto bg-white rounded-md shadow-md w-full p-8">
-          {/* Header */}
-          <div className="flex justify-between items-start mb-6">
-            <div className="flex gap-3 items-center">
+          {/* text di atas */}
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+            {/* LEFT */}
+            <div className="flex items-start md:items-center gap-3">
               <button
                 type="button"
                 onClick={() => router.back()}
-                className="rounded-md border border-gray-300 p-1 bg-white hover:bg-gray-100 cursor-pointer"
+                className="flex items-center justify-center rounded-lg border border-gray-300 p-2 bg-white hover:bg-gray-100 transition cursor-pointer"
               >
-                <FaArrowLeft className="text-xl" />
+                <FaArrowLeft className="text-lg text-gray-700" />
               </button>
-              <h1 className="text-xl font-semibold text-gray-800">
-                Lamar Posisi Frontend di Rakamin
-              </h1>
+
+              <div>
+                <h1 className="text-lg md:text-xl font-semibold text-gray-800 leading-snug">
+                  Lamar Posisi{" "}
+                  <span className="text-cyan-600">Frontend Developer</span>
+                </h1>
+
+                <p className="text-xs md:text-sm text-gray-500">
+                  Di PT Mencari Kerja Sejati
+                </p>
+              </div>
             </div>
-            <div className="flex items-center gap-1 text-sm text-gray-500">
-              <TbInfoSquareFilled className="text-2xl text-blue-950" />
-              Field ini wajib diisi
+
+            {/* RIGHT */}
+            <div className="flex items-center gap-2 bg-red-50 text-red-500 text-xs md:text-sm px-3 py-2 rounded-lg w-fit">
+              <TbInfoSquareFilled className="text-lg" />
+              <span>Field ini wajib diisi</span>
             </div>
           </div>
-          <p className="text-red-500 font-semibold text-sm mb-6">
-            *Wajib diisi
-          </p>
 
           {/* Full Name */}
           <div className="mb-4">
@@ -325,90 +389,46 @@ export default function ApplyForm() {
             )}
           </div>
 
-          {/* Phone */}
+          {/* No Hp */}
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="mb-1 block text-sm font-medium text-gray-700">
               Nomor telepon<span className="text-red-500">*</span>
             </label>
 
-            {/* Phone input dengan negara */}
-            <div className="relative">
-              <div
-                className={`flex items-center border rounded-lg overflow-hidden bg-white ${
-                  errors.phone ? "border-red-500" : "border-gray-300"
-                }`}
-              >
-                {/* Country Button */}
-                <button
-                  type="button"
-                  onClick={() => setShowCountryDropdown(!showCountryDropdown)}
-                  className="flex items-center gap-2 px-3 py-2 border-r border-gray-300 hover:bg-gray-50 text-gray-700 font-medium min-w-max"
-                >
-                  <span className="text-xl">{selectedCountryFlag}</span>
-                  <span>{countryCode}</span>
-                  <span className="text-gray-400">▼</span>
-                </button>
-
-                {/* Phone Input */}
-                <input
-                  type="tel"
-                  name="phone"
-                  value={form.phone}
-                  onChange={handleChange}
-                  placeholder="81XXXXXXXXX"
-                  className="flex-1 px-3 py-2 focus:outline-none text-gray-700"
-                />
-              </div>
-
-              {/* Dropdown List dengan Search */}
-              {showCountryDropdown && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-50 w-full">
-                  {/* Search Input */}
-                  <div className="p-3 border-b border-gray-300 flex items-center gap-2 bg-gray-50">
-                    <IoSearch className="text-gray-400" />
-                    <input
-                      type="text"
-                      placeholder="Search"
-                      value={searchCountry}
-                      onChange={(e) => setSearchCountry(e.target.value)}
-                      className="flex-1 outline-none bg-gray-50 text-sm"
-                      autoFocus
-                    />
-                  </div>
-
-                  {/* Country List */}
-                  <div className="max-h-48 overflow-y-auto">
-                    {filteredCountries.length > 0 ? (
-                      filteredCountries.map((country) => (
-                        <button
-                          key={country.dial}
-                          type="button"
-                          onClick={() => handleSelectCountry(country.dial)}
-                          className="w-full text-left px-4 py-3 hover:bg-gray-100 flex items-center gap-3 border-b border-gray-100 last:border-b-0"
-                        >
-                          <span className="text-2xl">{country.flag}</span>
-                          <div className="flex-1">
-                            <p className="font-medium text-gray-800">
-                              {country.name}
-                            </p>
-                          </div>
-                          <span className="text-gray-600 font-medium">
-                            {country.dial}
-                          </span>
-                        </button>
-                      ))
-                    ) : (
-                      <div className="px-4 py-6 text-center text-gray-500 text-sm">
-                        Negara tidak ditemukan
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
+            <div
+              className={`rounded-xl border bg-white transition-all duration-300 ${
+                errors.phone
+                  ? "border-red-500 ring-2 ring-red-100"
+                  : "border-gray-300 hover:border-cyan-300 focus-within:border-cyan-400 focus-within:ring-2 focus-within:ring-cyan-100"
+              }`}
+            >
+              <PhoneInput
+                defaultCountry="id"
+                value={form.phone}
+                onChange={(phone) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    phone,
+                  }))
+                }
+                inputClassName="!w-full !border-0 !bg-transparent !px-3 !py-2.5 !text-sm !text-gray-700 placeholder:!text-gray-400 focus:!outline-none focus:!ring-0"
+                countrySelectorStyleProps={{
+                  buttonClassName:
+                    "!border-0 !border-r !border-gray-300 !bg-white hover:!bg-gray-50 !px-3 !py-2.5 !rounded-l-xl",
+                  dropdownStyleProps: {
+                    className:
+                      "!z-50 !mt-2 !rounded-xl !border !border-gray-200 !shadow-xl",
+                    listItemClassName:
+                      "hover:!bg-cyan-50 !px-3 !py-2 transition-colors duration-200",
+                  },
+                }}
+                placeholder="81XXXXXXXXX"
+                forceDialCode={true}
+              />
             </div>
 
             {errors.phone && (
-              <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
+              <p className="mt-1 text-xs text-red-500">{errors.phone}</p>
             )}
           </div>
 
@@ -455,6 +475,41 @@ export default function ApplyForm() {
               <p className="text-red-500 text-xs mt-1">{errors.linkedin}</p>
             )}
           </div>
+
+          {/* Upload CV */}
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">
+              Upload CV (PDF)
+            </label>
+
+            <label className="flex items-center justify-between w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-cyan-600 transition">
+              <div className="flex items-center gap-3">
+                <FiFileText className="text-xl text-gray-500" />
+
+                <div className="text-sm">
+                  {file ? (
+                    <span className="text-gray-800 font-medium">
+                      {file.name}
+                    </span>
+                  ) : (
+                    <span className="text-gray-500">
+                      Pilih file PDF (max 2MB)
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <FiUpload className="text-xl text-gray-500" />
+
+              <input
+                type="file"
+                accept="application/pdf"
+                className="hidden"
+                onChange={(e) => setFile(e.target.files?.[0] || null)}
+              />
+            </label>
+          </div>
         </div>
 
         {/* Submit */}
@@ -462,13 +517,20 @@ export default function ApplyForm() {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full ${
+            className={`w-full flex items-center justify-center gap-2 py-3 rounded-lg font-medium transition ${
               loading
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-cyan-700 hover:bg-cyan-800"
-            } text-white py-3 rounded-lg font-medium transition`}
+                ? "bg-cyan-700 cursor-not-allowed"
+                : "bg-cyan-700 hover:bg-cyan-800 cursor-pointer"
+            } text-white`}
           >
-            {loading ? "Mengirim..." : "Kirim Aplikasi"}
+            {loading ? (
+              <>
+                <Spinner className="w-4 h-4 size-5 text-white" />
+                Mengirim...
+              </>
+            ) : (
+              "Kirim Lamaran"
+            )}
           </button>
         </div>
       </form>

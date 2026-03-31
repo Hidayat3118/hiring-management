@@ -18,8 +18,11 @@ const inter = Inter({
 });
 
 export const metadata = {
-  title: "My Hiring App",
+  title: "Hiring Management",
   description: "Hiring platform untuk recruiter dan candidate",
+  icons: {
+    icon: "/perusahaan.svg",
+  },
 };
 
 export default function RootLayout({ children }) {

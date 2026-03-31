@@ -9,7 +9,8 @@ export default function forgotPassword() {
         {/* Logo */}
         <div className="flex justify-start">
           <Image
-            src={"/rekamin.png"}
+            src={"/perusahaan.svg"}
+            className="h-14 w-14 ml-8 mb-4"
             width={150}
             height={100}
             alt="icon rekamin"

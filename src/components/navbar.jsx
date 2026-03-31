@@ -22,7 +22,7 @@ export default function Navbar() {
   const firebaseAuth = getAuth();
   const router = useRouter();
 
-  // ✅ Cek user login
+  // Cek user login
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(firebaseAuth, (currentUser) => {
       setUser(currentUser);
@@ -30,12 +30,12 @@ export default function Navbar() {
     return () => unsubscribe();
   }, [firebaseAuth]);
 
-  // ✅ Logout handler
+  // Logout handler
   const handleLogout = async () => {
     try {
       await signOut(auth);
       toast.success("Berhasil keluar");
-      router.push("/"); // arahkan ke halaman utama
+      router.push("/");
     } catch (error) {
       console.error("Gagal keluar:", error);
       toast.error("Gagal keluar");

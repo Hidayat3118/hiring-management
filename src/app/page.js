@@ -129,9 +129,10 @@ export default function Home() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="bg-white rounded-lg shadow-md w-full max-w-lg">
         {/* Logo */}
-        <div className="flex justify-start">
+        <div className="flex justify-starr">
           <Image
-            src={"/rekamin.png"}
+            src={"/perusahaan.svg"}
+            className="h-14 w-14 ml-8 mb-4"
             width={150}
             height={100}
             alt="icon rekamin"
@@ -142,7 +143,7 @@ export default function Home() {
         <div className="pb-8 pl-8 pr-8">
           {/* Title */}
           <h2 className="text-lg text-neutral-700 font-semibold text-left mb-2">
-            Masuk ke Rakamin
+            Masuk ke PT Mencari Kerja Sejati
           </h2>
           <p className="text-left text-gray-600 text-sm mb-6">
             Belum punya akun?{" "}
