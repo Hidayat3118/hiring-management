@@ -16,6 +16,8 @@ import { auth } from "@/lib/firebase";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { HiOutlineDocumentText } from "react-icons/hi2";
+import { HiOutlineBriefcase } from "react-icons/hi2";
 
 export default function Navbar() {
   const [user, setUser] = useState(null);
@@ -47,9 +49,9 @@ export default function Navbar() {
       <div className="flex justify-end items-center max-w-7xl mx-auto px-6 ">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Avatar className="h-11 w-11 hover:opacity-80 transition cursor-pointer">
+            <Avatar className="h-12 w-12 md:h-14 md:w-14 hover:opacity-80 transition cursor-pointer">
               <AvatarImage
-                src={user?.photoURL || "https://github.com/shadcn.png"}
+              
                 alt="Profile"
               />
               <AvatarFallback className="bg-gradient-to-br from-cyan-100 to-cyan-200 text-cyan-700 font-semibold">
@@ -74,33 +76,36 @@ export default function Navbar() {
                   {user?.email}
                 </p>
                 <p className="text-xs text-gray-500">
-                  Role: <span className="font-medium text-cyan-600">Admin</span>
+                  Role:{" "}
+                  <span className="font-medium text-cyan-600">Pelamar</span>
                 </p>
               </div>
             </div>
 
             {/* Menu */}
             <div className="mt-2 space-y-1">
+              {/* Lamaran */}
               <DropdownMenuItem
-                onClick={() => alert("Lihat profil")}
+                onClick={() => router.push("/dashboard")}
                 className="group flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer text-gray-700 hover:bg-gray-100 transition"
               >
-                <HiOutlineUserCircle
+                <HiOutlineDocumentText
                   size={24}
                   className="text-gray-500 group-hover:text-cyan-600 transition"
                 />
-                <span className="text-sm font-medium">Profile</span>
+                <span className="text-sm font-medium">Lamaran</span>
               </DropdownMenuItem>
 
+              {/* Setting */}
               <DropdownMenuItem
-                onClick={() => alert("Buka pengaturan")}
+                onClick={() => router.push("/jobList")}
                 className="group flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer text-gray-700 hover:bg-gray-100 transition"
               >
-                <HiOutlineCog6Tooth
+                <HiOutlineBriefcase
                   size={24}
                   className="text-gray-500 group-hover:text-cyan-600 transition"
                 />
-                <span className="text-sm font-medium">Settings</span>
+                <span className="text-sm font-medium">JobList</span>
               </DropdownMenuItem>
             </div>
 

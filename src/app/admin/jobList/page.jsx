@@ -136,12 +136,12 @@ export default function JobList() {
           <DropdownMenuTrigger asChild>
             <button className="flex items-center gap-3 cursor-pointer group rounded-full ">
               {/* Avatar */}
-              <Avatar className="w-11 h-11 cursor-pointer hover:opacity-80 transition">
+              <Avatar className="h-12 w-12 md:h-12 md:w-12 cursor-pointer hover:opacity-80 transition">
                 <AvatarImage
-                  src={user?.photoURL || "https://github.com/shadcn.png"}
+                  src={"/"}
                   alt="Profile"
                 />
-                <AvatarFallback>
+                <AvatarFallback className="bg-yellow-500 text-green-800">
                   {user?.email ? user.email.charAt(0).toUpperCase() : "CN"}
                 </AvatarFallback>
               </Avatar>

@@ -185,12 +185,9 @@ export default function ManageCandidate() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="group flex items-center gap-3 rounded-2xl border border-gray-200 bg-white px-3 py-2 shadow-sm transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-cyan-500">
-                <Avatar className="h-11 w-11 transition group-hover:opacity-90">
-                  <AvatarImage
-                    src={user?.photoURL || "https://github.com/shadcn.png"}
-                    alt="Profile"
-                  />
-                  <AvatarFallback>
+                <Avatar className="h-10 w-10 md:h-12 md:w-12 cursor-pointer hover:opacity-80 transition">
+                  <AvatarImage src={"/"} alt="Profile" />
+                  <AvatarFallback className="bg-yellow-500 text-green-800">
                     {user?.email ? user.email.charAt(0).toUpperCase() : "CN"}
                   </AvatarFallback>
                 </Avatar>
@@ -340,7 +337,7 @@ export default function ManageCandidate() {
                           href={item.linkedin}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="group inline-flex items-center gap-2 rounded-md bg-gradient-to-r from-cyan-500 to-blue-500 px-3 py-1.5 text-sm font-semibold text-white shadow-sm transition-all hover:shadow-md hover:scale-[1.03] active:scale-[0.97]"
+                          className="group inline-flex items-center gap-2 rounded-md bg-gradient-to-r from-cyan-500 to-blue-500 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-all hover:shadow-md hover:scale-[1.03] active:scale-[0.97]"
                         >
                           <FiExternalLink size={14} />
                           LinkedIn
@@ -353,7 +350,7 @@ export default function ManageCandidate() {
                             href={item.resumeUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 rounded-md bg-gradient-to-r from-emerald-500 to-green-500 px-3 py-1.5 text-sm font-semibold text-white shadow-sm transition-all hover:shadow-md hover:scale-[1.03] active:scale-[0.97]"
+                            className="inline-flex items-center gap-1 text-xs rounded-md bg-gradient-to-r from-emerald-500 to-green-500 px-3 py-1.5 font-semibold text-white shadow-sm transition-all hover:shadow-md hover:scale-[1.03] active:scale-[0.97]"
                           >
                             <FiFileText size={14} />
                             View CV

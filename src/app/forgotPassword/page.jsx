@@ -27,7 +27,7 @@ export default function forgotPassword() {
           </Link>
           {/* Title */}
           <h2 className="text-lg text-neutral-700 font-semibold text-left mb-2">
-            Selamat Datang Rakamin
+            Selamat Datang PT Mencari Kerja Sejati
           </h2>
           {/* Form */}
           <form className="space-y-4">

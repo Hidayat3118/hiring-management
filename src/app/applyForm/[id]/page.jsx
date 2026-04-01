@@ -12,7 +12,8 @@ import { Spinner } from "@/components/ui/spinner";
 import { FiUpload, FiFileText } from "react-icons/fi";
 import { PhoneInput } from "react-international-phone";
 import "react-international-phone/style.css";
-
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 // Data provinsi Indonesia (5 contoh)
 const INDONESIAN_PROVINCES = [
   "Aceh",
@@ -62,6 +63,20 @@ export default function ApplyForm() {
   const [pageLoading, setPageLoading] = useState(true);
   const [file, setFile] = useState(null);
   const { id } = useParams();
+  const [user,setUser] = useState(null);
+
+   // cek user login
+    useEffect(() => {
+      const unsubscribe = onAuthStateChanged(auth, (user) => {
+        if (!user) {
+          router.push("/register");
+        } else {
+          setUser(user);
+        }
+        setLoading(false);
+      });
+      return () => unsubscribe();
+    }, [router]);
 
   // state form
   const [form, setForm] = useState({
@@ -84,59 +99,16 @@ export default function ApplyForm() {
     linkedin: "",
   });
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
-    setErrors({ ...errors, [name]: "" });
-  };
-
-  //Validasi form
-  const validateForm = () => {
-    const newErrors = {};
-    const phoneDigits = (form.phone || "").replace(/\D/g, "");
-
-    if (!form.fullName.trim()) {
-      newErrors.fullName = "Nama lengkap wajib diisi";
-    }
-
-    if (!form.dob) {
-      newErrors.dob = "Tanggal lahir wajib diisi";
-    }
-
-    if (!form.pronoun) {
-      newErrors.pronoun = "Pilih pronoun Anda";
-    }
-
-    if (!form.domicile) {
-      newErrors.domicile = "Domisili wajib diisi";
-    }
-
-    if (!form.phone?.trim()) {
-      newErrors.phone = "Nomor telepon wajib diisi";
-    } else if (phoneDigits.length < 10) {
-      newErrors.phone = "Nomor telepon minimal 10 digit";
-    }
-
-    if (!form.email.trim()) {
-      newErrors.email = "Email wajib diisi";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-      newErrors.email = "Format email tidak valid";
-    }
-
-    if (!form.linkedin.trim()) {
-      newErrors.linkedin = "URL LinkedIn wajib diisi";
-    } else if (!form.linkedin.includes("linkedin.com")) {
-      newErrors.linkedin = "URL LinkedIn tidak valid";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   // Handle tambah lamaran
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
+    if (!user) {
+      toast.error("Kamu harus login dulu");
+      setLoading(false);
+      return;
+    }
 
     if (!validateForm()) {
       toast.error("Pastikan semua data terisi dengan benar");
@@ -189,10 +161,11 @@ export default function ApplyForm() {
         phoneCountryCode: countryCode,
         email: form.email.trim(),
         linkedin: form.linkedin.trim(),
-        status: "pending",
+        status: "submitted",
         jobId: id,
         appliedAt: serverTimestamp(),
-
+        // user id
+        userId: user.uid,
         // Data CV dari Cloudinary
         resumeUrl: uploadData.resumeUrl,
         resumePublicId: uploadData.resumePublicId,
@@ -232,6 +205,55 @@ export default function ApplyForm() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+    setErrors({ ...errors, [name]: "" });
+  };
+
+  //Validasi form
+  const validateForm = () => {
+    const newErrors = {};
+    const phoneDigits = (form.phone || "").replace(/\D/g, "");
+
+    if (!form.fullName.trim()) {
+      newErrors.fullName = "Nama lengkap wajib diisi";
+    }
+
+    if (!form.dob) {
+      newErrors.dob = "Tanggal lahir wajib diisi";
+    }
+
+    if (!form.pronoun) {
+      newErrors.pronoun = "Pilih pronoun Anda";
+    }
+
+    if (!form.domicile) {
+      newErrors.domicile = "Domisili wajib diisi";
+    }
+
+    if (!form.phone?.trim()) {
+      newErrors.phone = "Nomor telepon wajib diisi";
+    } else if (phoneDigits.length < 10) {
+      newErrors.phone = "Nomor telepon minimal 10 digit";
+    }
+
+    if (!form.email.trim()) {
+      newErrors.email = "Email wajib diisi";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      newErrors.email = "Format email tidak valid";
+    }
+
+    if (!form.linkedin.trim()) {
+      newErrors.linkedin = "URL LinkedIn wajib diisi";
+    } else if (!form.linkedin.includes("linkedin.com")) {
+      newErrors.linkedin = "URL LinkedIn tidak valid";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   // loading halaman

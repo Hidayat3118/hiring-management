@@ -15,28 +15,17 @@ import { HiOutlineDocumentText } from "react-icons/hi2";
 import { FiSearch } from "react-icons/fi";
 import { HiOutlineBriefcase, HiOutlineBuildingOffice2 } from "react-icons/hi2";
 import { FiArrowRight } from "react-icons/fi";
-import { Input } from "@/components/ui/input";
+import {useAuth} from "@/context/AuthContext";
+
 
 export default function Page() {
-  const [user, setUser] = useState(null);
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
   const [lowonganKerja, setLowonganKerja] = useState([]);
   const [selectedJob, setSelectedJob] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // cek user login
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        router.push("/register");
-      } else {
-        setUser(user);
-      }
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, [router]);
+  //  user
+  const { user, loading } = useAuth();
 
   // Ambil lowongan kerja dari firebase
   useEffect(() => {
@@ -112,47 +101,45 @@ export default function Page() {
 
             {filteredJobs.length > 0 ? (
               filteredJobs.map((job) => (
-                
-                  <div
-                    key={job.id}
-                    onClick={() => setSelectedJob(job)}
-                    className={` border rounded-xl hover:shadow-md transition p-4 cursor-pointer flex gap-3 items-start mb-3 ${
-                      selectedJob?.id === job.id
-                        ? "border-cyan-300 bg-cyan-50 ring-1 ring-cyan-200"
-                        : "border-gray-300 "
-                    }`}
-                  >
-                    {/* Logo */}
-                    <div className="w-12 h-12 rounded-lg overflow-hidden border flex items-center justify-center bg-gray-50">
-                      <Image
-                        src="/perusahaan.svg"
-                        alt="Company Logo"
-                        width={48}
-                        height={48}
-                        className="object-cover"
-                      />
+                <div
+                  key={job.id}
+                  onClick={() => setSelectedJob(job)}
+                  className={` border rounded-xl hover:shadow-md transition p-4 cursor-pointer flex gap-3 items-start mb-3 ${
+                    selectedJob?.id === job.id
+                      ? "border-cyan-300 bg-cyan-50 ring-1 ring-cyan-200"
+                      : "border-gray-300 "
+                  }`}
+                >
+                  {/* Logo */}
+                  <div className="w-12 h-12 rounded-lg overflow-hidden border flex items-center justify-center bg-gray-50">
+                    <Image
+                      src="/perusahaan.svg"
+                      alt="Company Logo"
+                      width={48}
+                      height={48}
+                      className="object-cover"
+                    />
+                  </div>
+
+                  {/* Info */}
+                  <div className="flex-1">
+                    <h2 className="font-semibold text-gray-800 text-sm md:text-base">
+                      {job.namaLoker}
+                    </h2>
+
+                    <div className="mt-1 flex items-center text-gray-500 text-xs md:text-sm gap-1">
+                      <IoLocationOutline />
+                      {job.lokasi || "Lokasi tidak tersedia"}
                     </div>
 
-                    {/* Info */}
-                    <div className="flex-1">
-                      <h2 className="font-semibold text-gray-800 text-sm md:text-base">
-                        {job.namaLoker}
-                      </h2>
-
-                      <div className="mt-1 flex items-center text-gray-500 text-xs md:text-sm gap-1">
-                        <IoLocationOutline />
-                        {job.lokasi || "Lokasi tidak tersedia"}
-                      </div>
-
-                      <div className="mt-1 flex items-center text-gray-500 text-xs md:text-sm gap-1">
-                        <HiOutlineBanknotes />
-                        {job.gajiMinimum && job.gajiMaksimum
-                          ? `Rp ${job.gajiMinimum.toLocaleString()} - Rp ${job.gajiMaksimum.toLocaleString()}`
-                          : "Gaji tidak tersedia"}
-                      </div>
+                    <div className="mt-1 flex items-center text-gray-500 text-xs md:text-sm gap-1">
+                      <HiOutlineBanknotes />
+                      {job.gajiMinimum && job.gajiMaksimum
+                        ? `Rp ${job.gajiMinimum.toLocaleString()} - Rp ${job.gajiMaksimum.toLocaleString()}`
+                        : "Gaji tidak tersedia"}
                     </div>
                   </div>
-              
+                </div>
               ))
             ) : (
               <div className="flex flex-col items-center justify-center mt-10 text-gray-500">
@@ -235,7 +222,6 @@ export default function Page() {
                         .filter((line) => line.trim() !== "")
                         .map((line, index) => (
                           <p key={index} className="flex items-start gap-2">
-                            
                             <span className="text-sm text-gray-700">
                               {line}
                             </span>
