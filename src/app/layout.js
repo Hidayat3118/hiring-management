@@ -18,7 +18,7 @@ const inter = Inter({
 });
 
 export const metadata = {
-  title: "Hiring Management",
+  title: "HireFlow",
   description: "Hiring platform untuk recruiter dan candidate",
   icons: {
     icon: "/perusahaan.svg",
